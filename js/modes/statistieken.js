@@ -404,7 +404,7 @@
     gehoor: [
       { label: "Goed", get: (v) => v.accuracy, better: "higher", unit: "%", scale: 100 },
       { label: "Reactietijd", get: (v) => v.meanTimeMs, better: "lower", unit: "s", scale: 0.001, digits: 1 },
-      { label: "Opnieuw beluisterd", get: (v) => v.replays, better: "lower", unit: "× per ronde", deltaUnit: "×", digits: 1 },
+      { label: "Per ronde opnieuw beluisterd", get: (v) => v.replays, better: "lower", unit: "×", digits: 1 },
       { label: "Beste sessie", kind: "best", unit: "%" },
     ],
     bpm: [
@@ -416,7 +416,7 @@
     maatsoort: [
       { label: "Goed", get: (v) => v.accuracy, better: "higher", unit: "%", scale: 100 },
       { label: "Reactietijd", get: (v) => v.meanTimeMs, better: "lower", unit: "s", scale: 0.001, digits: 1 },
-      { label: "Opnieuw beluisterd", get: (v) => v.replays, better: "lower", unit: "× per ronde", deltaUnit: "×", digits: 1 },
+      { label: "Per ronde opnieuw beluisterd", get: (v) => v.replays, better: "lower", unit: "×", digits: 1 },
       { label: "Beste sessie", kind: "best", unit: "%" },
     ],
   };

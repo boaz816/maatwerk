@@ -60,14 +60,16 @@
 .view[data-mode="statistieken"] .st-cal-lg .st-cal-cell { width: 12px; height: 12px; border-radius: 3px; }
 
 /* ---------- Keuze per oefening ---------- */
-/* Direct onder de kop en plakkend bij scrollen. Het ankertje ervoor (0 px hoog) meet of hij plakt;
-   de negatieve marge heft de extra tussenruimte van .st weer op. */
-.view[data-mode="statistieken"] .st-tabs-anchor { height: 0; margin-bottom: -24px; }
+/* Direct onder de kop en plakkend bij scrollen. Het ankertje ervoor (0 px hoog) meet of hij plakt.
+   De balk zelf heeft geen negatieve marge (dat verschuift een plakkend element); de buren vangen de
+   8 px binnenruimte op, zodat de afstanden gelijk blijven aan de rest van de pagina. */
+.view[data-mode="statistieken"] .st-tabs-anchor { height: 0; margin-bottom: -32px; }
 .view[data-mode="statistieken"] .st-tabs-row {
   display: flex; position: sticky; top: 0; z-index: 6;
-  margin: -8px 0; padding: 8px 0; background: var(--bg);
+  padding: 8px 0; background: var(--bg);
   transition: box-shadow var(--fast);
 }
+.view[data-mode="statistieken"] .st-tabs-row + .st-section { margin-top: -8px; }
 .view[data-mode="statistieken"] .st-tabs-row.is-stuck { box-shadow: 0 1px 0 var(--line), 0 12px 24px -16px rgba(0, 0, 0, 0.9); }
 .view[data-mode="statistieken"] .st-tabs button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; }
 .view[data-mode="statistieken"] .st-tabs button svg { opacity: 0.85; }
