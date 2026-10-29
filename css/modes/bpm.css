@@ -1,0 +1,599 @@
+/* BPM-training — eigen stijl van deze pagina.
+   Alles valt onder .view[data-mode="bpm"] en gebruikt alleen tokens uit css/base.css.
+   Voorvoegsel van eigen klassen: .bp- */
+
+/* ---------- Algemeen ---------- */
+.view[data-mode="bpm"] .bp { display: flex; flex-direction: column; }
+.view[data-mode="bpm"] .bp-body { display: flex; flex-direction: column; gap: var(--gap); }
+
+/* Tijdens spelen en bij het resultaat is de inleiding niet meer nodig */
+.view[data-mode="bpm"] .bp[data-state="play"] .page-head .lead,
+.view[data-mode="bpm"] .bp[data-state="result"] .page-head .lead { display: none; }
+.view[data-mode="bpm"] .bp[data-state="play"] .page-head,
+.view[data-mode="bpm"] .bp[data-state="result"] .page-head { margin-bottom: 20px; }
+
+/* Betekeniskleur per ronde: ok = raak, warn = dichtbij, bad = ernaast */
+.view[data-mode="bpm"] [data-tone="ok"] { --tone: var(--ok); }
+.view[data-mode="bpm"] [data-tone="warn"] { --tone: var(--warn); }
+.view[data-mode="bpm"] [data-tone="bad"] { --tone: var(--bad); }
+
+@keyframes bp-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Op een gekleurde knop past het toetslabel zich aan */
+.view[data-mode="bpm"] .btn-primary .kbd {
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  border-color: color-mix(in srgb, var(--ink) 28%, transparent);
+  color: var(--ink);
+}
+/* Op een aanraakscherm zijn toetslabels ruis */
+@media (hover: none) {
+  .view[data-mode="bpm"] .bp .kbd,
+  .view[data-mode="bpm"] .bp-keys { display: none; }
+}
+
+/* Telefoon: wat de focus krijgt, schuift niet achter de vaste onderbalk */
+@media (max-width: 860px) {
+  .view[data-mode="bpm"] .bp :is(button, input, a, [tabindex]) {
+    scroll-margin-top: 12px;
+    scroll-margin-bottom: calc(88px + env(safe-area-inset-bottom));
+  }
+}
+
+/* ================= Instellen ================= */
+.view[data-mode="bpm"] .bp-setup { container: bp-setup / inline-size; }
+.view[data-mode="bpm"] .bp-setup-grid { display: grid; gap: var(--gap); align-items: start; }
+@container bp-setup (min-width: 800px) {
+  .view[data-mode="bpm"] .bp-setup-grid { grid-template-columns: minmax(0, 1fr) 296px; }
+}
+.view[data-mode="bpm"] .bp-setup-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+.view[data-mode="bpm"] .bp-settings { container: bp-settings / inline-size; }
+.view[data-mode="bpm"] .bp-settings .panel-title { margin-bottom: 18px; }
+@media (max-width: 640px) {
+  .view[data-mode="bpm"] .bp-settings,
+  .view[data-mode="bpm"] .bp-how { padding: 20px 18px; }
+}
+.view[data-mode="bpm"] .bp-section-head { margin-bottom: 10px; }
+.view[data-mode="bpm"] .bp-section-label { font-size: 13px; font-weight: 500; color: var(--text-2); }
+
+/* Voorkeuzes: op smal 3 + 2 (zonder leeg vak), vanaf 520 px op één rij */
+.view[data-mode="bpm"] .bp-presets {
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); width: 100%;
+}
+.view[data-mode="bpm"] .bp-presets button {
+  grid-column: span 2;
+  min-height: 56px; padding: 8px 10px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  line-height: 1.2;
+}
+.view[data-mode="bpm"] .bp-presets button:nth-child(n + 4) { grid-column: span 3; }
+@container bp-settings (min-width: 520px) {
+  .view[data-mode="bpm"] .bp-presets { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .view[data-mode="bpm"] .bp-presets button,
+  .view[data-mode="bpm"] .bp-presets button:nth-child(n + 4) { grid-column: auto; }
+}
+.view[data-mode="bpm"] .bp-preset-name { font-weight: 600; font-size: 14px; }
+.view[data-mode="bpm"] .bp-preset-range { font-size: 12px; color: var(--text-2); }
+.view[data-mode="bpm"] .bp-presets button[aria-pressed="true"] .bp-preset-range { color: var(--text); }
+
+/* Eigen bereik: van / tot + schaal. Alleen zichtbaar als 'Eigen' gekozen is. */
+.view[data-mode="bpm"] .bp-range-row {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px;
+  margin-top: 12px; padding: 14px; border-radius: var(--r);
+  background: var(--bg-2); border: 1px solid var(--line);
+  animation: bp-in var(--med) var(--ease);
+}
+.view[data-mode="bpm"] .bp-range-row[hidden] { display: none; }
+/* De tellers vullen hun kolom, zodat twee naast elkaar ook op 375 px passen */
+.view[data-mode="bpm"] .bp-range-row .stepper { display: flex; width: 100%; background: var(--surface); }
+.view[data-mode="bpm"] .bp-range-row .stepper output { flex: 1 1 auto; min-width: 0; }
+.view[data-mode="bpm"] .bp-range { grid-column: 1 / -1; min-width: 0; padding-top: 4px; }
+@container bp-settings (min-width: 560px) {
+  .view[data-mode="bpm"] .bp-range-row { grid-template-columns: 164px 164px minmax(0, 1fr); align-items: end; gap: 12px 16px; }
+  .view[data-mode="bpm"] .bp-range { grid-column: auto; padding: 0 0 2px 8px; }
+}
+.view[data-mode="bpm"] .bp-range-track {
+  position: relative; height: 6px; border-radius: 3px; background: var(--surface-3);
+}
+.view[data-mode="bpm"] .bp-range-band {
+  position: absolute; top: 0; bottom: 0; border-radius: 3px; background: var(--mode);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--mode) 40%, transparent);
+  transition: left var(--med) var(--ease), width var(--med) var(--ease);
+}
+.view[data-mode="bpm"] .bp-range-scale { position: relative; height: 16px; margin-top: 8px; }
+.view[data-mode="bpm"] .bp-range-scale span {
+  position: absolute; top: 0; transform: translateX(-50%);
+  font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 11px; color: var(--text-3);
+}
+
+/* Instellingen als rijen. Smal: titel en bediening op één regel, uitleg eronder.
+   Breed: titel en uitleg links, bediening rechts. */
+.view[data-mode="bpm"] .bp-opts { margin-top: 14px; }
+.view[data-mode="bpm"] .bp-opt {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "title control" "hint hint";
+  align-items: center; gap: 6px 16px;
+  padding: 12px 0; border-top: 1px solid var(--line);
+}
+.view[data-mode="bpm"] .bp-opt:last-child { padding-bottom: 0; }
+.view[data-mode="bpm"] .bp-opt-title { grid-area: title; min-width: 0; font-weight: 600; font-size: 15px; }
+.view[data-mode="bpm"] label.bp-opt-title { cursor: pointer; }
+.view[data-mode="bpm"] .bp-opt-hint { grid-area: hint; font-size: 13px; color: var(--text-2); }
+.view[data-mode="bpm"] .bp-opt-control { grid-area: control; justify-self: end; min-width: 0; max-width: 100%; }
+.view[data-mode="bpm"] .bp-opt .seg button { min-height: 44px; }
+.view[data-mode="bpm"] .bp-opt .switch { min-width: 44px; justify-content: flex-end; }
+@container bp-settings (min-width: 520px) {
+  .view[data-mode="bpm"] .bp-opts { margin-top: 18px; }
+  .view[data-mode="bpm"] .bp-opt { grid-template-areas: "title control" "hint control"; gap: 2px 24px; padding: 14px 0; }
+  .view[data-mode="bpm"] .bp-opt-title { align-self: end; }
+  .view[data-mode="bpm"] .bp-opt-hint { align-self: start; }
+}
+/* Op smal valt uitleg weg die de titel al zegt */
+@container bp-settings (max-width: 519px) {
+  .view[data-mode="bpm"] .bp-opt-hint.is-optional { display: none; }
+}
+/* Heel smal: alles onder elkaar */
+@container bp-settings (max-width: 279px) {
+  .view[data-mode="bpm"] .bp-opt { grid-template-columns: minmax(0, 1fr); grid-template-areas: "title" "hint" "control"; }
+  .view[data-mode="bpm"] .bp-opt-control { justify-self: start; }
+}
+
+/* Startbalk: blijft onderin in beeld zolang je door de instellingen scrolt */
+.view[data-mode="bpm"] .bp-start-row {
+  position: sticky; bottom: 16px; z-index: 5;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 20px;
+  padding: 12px; border-radius: var(--r-l);
+  background: color-mix(in srgb, var(--bg-2) 90%, transparent);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  border: 1px solid var(--line-2);
+  box-shadow: var(--shadow);
+}
+.view[data-mode="bpm"] .bp-start { min-width: 200px; }
+.view[data-mode="bpm"] .bp-summary { min-width: 0; font-size: 14px; color: var(--text-2); }
+@media (max-width: 860px) {
+  .view[data-mode="bpm"] .bp-start-row { bottom: calc(72px + env(safe-area-inset-bottom)); }
+  /* Tabben door de instellingen: het veld met focus komt boven de startbalk */
+  .view[data-mode="bpm"] .bp-settings :is(button, input, [tabindex]) {
+    scroll-margin-bottom: calc(190px + env(safe-area-inset-bottom));
+  }
+}
+@media (min-width: 861px) {
+  .view[data-mode="bpm"] .bp-settings :is(button, input, [tabindex]) { scroll-margin-bottom: 110px; }
+}
+@media (max-width: 640px) {
+  .view[data-mode="bpm"] .bp-start-row { flex-direction: column; align-items: stretch; gap: 6px; padding: 10px; }
+  .view[data-mode="bpm"] .bp-start { width: 100%; min-width: 0; }
+  .view[data-mode="bpm"] .bp-summary { font-size: 12px; line-height: 1.4; text-align: center; text-wrap: balance; }
+}
+
+/* Zijpaneel: zo werkt het, houvast, jouw sessies */
+.view[data-mode="bpm"] .bp-how { display: flex; flex-direction: column; gap: 22px; }
+.view[data-mode="bpm"] .bp-how .panel-title { margin-bottom: 0; }
+.view[data-mode="bpm"] .bp-how-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.view[data-mode="bpm"] .bp-how-steps li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; align-items: start; }
+.view[data-mode="bpm"] .bp-how-no {
+  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 13px; font-weight: 600; color: var(--mode);
+  background: color-mix(in srgb, var(--mode) 14%, transparent);
+}
+.view[data-mode="bpm"] .bp-how-steps b { display: block; font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+.view[data-mode="bpm"] .bp-how-steps p { font-size: 13px; color: var(--text-2); }
+.view[data-mode="bpm"] .bp-side-title {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3);
+  margin-bottom: 10px;
+}
+.view[data-mode="bpm"] .bp-anchors { padding-top: 18px; border-top: 1px solid var(--line); }
+.view[data-mode="bpm"] .bp-anchor { display: flex; align-items: baseline; gap: 12px; padding: 4px 0; font-size: 13px; color: var(--text-2); }
+.view[data-mode="bpm"] .bp-anchor b {
+  flex: none; min-width: 40px; font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: 15px; color: var(--mode);
+}
+.view[data-mode="bpm"] .bp-anchor-tip { margin-top: 8px; font-size: 13px; color: var(--text-3); }
+.view[data-mode="bpm"] .bp-history-slot:empty { display: none; }
+.view[data-mode="bpm"] .bp-history { padding-top: 18px; border-top: 1px solid var(--line); }
+.view[data-mode="bpm"] .bp-spark { display: flex; align-items: flex-end; gap: 4px; height: 44px; }
+.view[data-mode="bpm"] .bp-spark span {
+  flex: 1 1 0; min-width: 0; height: var(--h, 4%); min-height: 3px; border-radius: 3px 3px 1px 1px;
+  background: color-mix(in srgb, var(--mode) 45%, var(--surface-3));
+}
+.view[data-mode="bpm"] .bp-spark span:last-child { background: var(--mode); }
+.view[data-mode="bpm"] .bp-history-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+.view[data-mode="bpm"] .bp-history-stats .stat-value { font-size: 20px; }
+.view[data-mode="bpm"] .bp-history-stats .stat-label { font-size: 12px; }
+
+/* ================= Spelen ================= */
+/* Telefoon: in speelstand alleen de terug-link boven het speelscherm, zodat de invoer hoog staat.
+   De titel blijft er voor schermlezers. */
+@media (max-width: 860px) {
+  .view[data-mode="bpm"] .bp[data-state="play"] .page-head { margin-bottom: 12px; gap: 0; }
+  .view[data-mode="bpm"] .bp[data-state="play"] .page-head .eyebrow { display: none; }
+  .view[data-mode="bpm"] .bp[data-state="play"] .page-head h1 {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+}
+
+.view[data-mode="bpm"] .bp-stage {
+  container: bp-stage / inline-size;
+  padding: 20px 24px 28px;
+  animation: bp-in var(--med) var(--ease);
+}
+@media (max-width: 860px) {
+  .view[data-mode="bpm"] .bp-stage { padding: 14px 16px 20px; }
+}
+.view[data-mode="bpm"] .bp-stage-top {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px 14px;
+  padding-bottom: 16px; margin-bottom: 24px; border-bottom: 1px solid var(--line);
+}
+.view[data-mode="bpm"] .bp-round { font-weight: 600; font-size: 15px; }
+.view[data-mode="bpm"] .bp-round:focus { outline: none; }
+.view[data-mode="bpm"] .bp-runscore { font-size: 13px; color: var(--text-2); }
+.view[data-mode="bpm"] .bp-runscore b {
+  font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text); margin-left: 2px;
+}
+.view[data-mode="bpm"] .bp-quit { padding: 0 12px; gap: 6px; }
+.view[data-mode="bpm"] .bp-progress { grid-column: 1 / -1; display: flex; gap: 3px; }
+.view[data-mode="bpm"] .bp-progress span {
+  flex: 1 1 0; height: 4px; border-radius: 2px; background: var(--surface-3);
+  transition: background var(--med) var(--ease);
+}
+.view[data-mode="bpm"] .bp-progress span.is-done { background: var(--mode); }
+.view[data-mode="bpm"] .bp-progress span.is-current { background: color-mix(in srgb, var(--mode) 40%, var(--surface-3)); }
+
+/* Vraagscherm. Smal: beeld, invoer, tikvlak onder elkaar.
+   Breed: beeld (en tikvlak) links, invoer rechts. */
+.view[data-mode="bpm"] .bp-ask {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px;
+  animation: bp-in var(--med) var(--ease);
+}
+@container bp-stage (min-width: 680px) {
+  .view[data-mode="bpm"] .bp-ask {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "visual answer";
+    gap: 24px 40px; align-items: center;
+  }
+  .view[data-mode="bpm"] .bp-ask.has-tap { grid-template-areas: "visual answer" "tap answer"; }
+  .view[data-mode="bpm"] .bp-visual { grid-area: visual; }
+  .view[data-mode="bpm"] .bp-answer { grid-area: answer; }
+  .view[data-mode="bpm"] .bp-tapzone { grid-area: tap; justify-self: center; }
+}
+
+/* Het beeld: een rustige cirkel die op de tel oplicht, en een puntje per tel */
+.view[data-mode="bpm"] .bp-visual { display: flex; flex-direction: column; align-items: center; gap: 18px; min-width: 0; }
+.view[data-mode="bpm"] .bp-beats { display: flex; flex-direction: column; align-items: center; gap: 18px; min-width: 0; }
+.view[data-mode="bpm"] .bp-pulse {
+  --pulse-ms: 400ms;
+  position: relative; flex: none; width: 188px; height: 188px; display: grid; place-items: center;
+}
+.view[data-mode="bpm"] .bp-pulse::before {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  border: 1px solid var(--line);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--mode) 7%, transparent), transparent 80%);
+}
+.view[data-mode="bpm"] .bp-ripple {
+  position: absolute; inset: 22px; border-radius: 50%;
+  border: 2px solid var(--mode); opacity: 0; pointer-events: none;
+}
+.view[data-mode="bpm"] .bp-core {
+  position: relative; width: 124px; height: 124px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--surface-2); border: 1px solid var(--line-2);
+}
+.view[data-mode="bpm"] .bp-count {
+  font-size: 46px; font-weight: 600; line-height: 1; color: var(--text-3);
+  transition: color var(--fast);
+}
+.view[data-mode="bpm"] .bp-stage.is-playing .bp-count { color: var(--text); }
+.view[data-mode="bpm"] .bp-pulse.is-accent .bp-count { color: var(--mode); }
+.view[data-mode="bpm"] .bp-pulse.is-hit .bp-ripple { animation: bp-ripple var(--pulse-ms) var(--ease) both; }
+.view[data-mode="bpm"] .bp-pulse.is-accent .bp-ripple { animation: bp-ripple-accent var(--pulse-ms) var(--ease) both; }
+.view[data-mode="bpm"] .bp-pulse.is-hit .bp-core { animation: bp-core var(--pulse-ms) var(--ease) both; }
+.view[data-mode="bpm"] .bp-pulse.is-accent .bp-core { animation: bp-core-accent var(--pulse-ms) var(--ease) both; }
+@keyframes bp-ripple {
+  from { opacity: 0.5; transform: scale(0.86); }
+  to { opacity: 0; transform: scale(1.1); }
+}
+@keyframes bp-ripple-accent {
+  from { opacity: 0.9; transform: scale(0.86); border-width: 3px; }
+  to { opacity: 0; transform: scale(1.18); border-width: 1px; }
+}
+@keyframes bp-core {
+  from { background: color-mix(in srgb, var(--mode) 14%, var(--surface-2)); border-color: color-mix(in srgb, var(--mode) 45%, transparent); }
+  to { background: var(--surface-2); border-color: var(--line-2); }
+}
+@keyframes bp-core-accent {
+  from {
+    background: color-mix(in srgb, var(--mode) 26%, var(--surface-2)); border-color: var(--mode);
+    box-shadow: 0 0 40px color-mix(in srgb, var(--mode) 35%, transparent);
+  }
+  to { background: var(--surface-2); border-color: var(--line-2); box-shadow: 0 0 0 transparent; }
+}
+
+.view[data-mode="bpm"] .bp-dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 16px; max-width: 100%; }
+.view[data-mode="bpm"] .bp-bar { display: flex; gap: 6px; }
+.view[data-mode="bpm"] .bp-dot {
+  width: 10px; height: 10px; border-radius: 50%; background: var(--surface-3);
+  transition: background var(--fast), transform var(--fast) var(--ease), box-shadow var(--fast);
+}
+.view[data-mode="bpm"] .bp-dot.is-one { box-shadow: inset 0 0 0 1.5px var(--text-3); }
+.view[data-mode="bpm"] .bp-dot.is-played { background: color-mix(in srgb, var(--mode) 38%, var(--surface-3)); box-shadow: none; }
+.view[data-mode="bpm"] .bp-dot.is-now {
+  background: var(--mode); transform: scale(1.3);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--mode) 70%, transparent);
+}
+.view[data-mode="bpm"] .bp-status { min-height: 21px; font-size: 14px; color: var(--text-2); text-align: center; }
+
+/* Tikvlak (alleen met tik-hulp) */
+.view[data-mode="bpm"] .bp-tapzone {
+  width: 100%; max-width: 420px; justify-self: center;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "pad pad" "read use";
+  gap: 12px; align-items: center;
+  padding: 12px; border-radius: var(--r); background: var(--bg-2); border: 1px solid var(--line);
+}
+.view[data-mode="bpm"] .bp-tap {
+  grid-area: pad; min-height: 64px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  border-radius: 12px; border: 1px solid var(--line-2); background: var(--surface-2); color: var(--text);
+  font-weight: 600; font-size: 15px;
+  touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--fast), border-color var(--fast);
+}
+.view[data-mode="bpm"] .bp-tap:hover { background: var(--surface-3); }
+.view[data-mode="bpm"] .bp-tap svg { color: var(--mode); }
+.view[data-mode="bpm"] .bp-tap.is-hit { animation: bp-tap 180ms var(--ease); }
+@keyframes bp-tap {
+  from { background: color-mix(in srgb, var(--mode) 30%, var(--surface-2)); border-color: var(--mode); transform: scale(0.985); }
+  to { background: var(--surface-2); border-color: var(--line-2); transform: none; }
+}
+.view[data-mode="bpm"] .bp-tap-read { grid-area: read; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.view[data-mode="bpm"] .bp-tap-est { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 24px; font-weight: 600; line-height: 1.1; }
+.view[data-mode="bpm"] .bp-tap-est small { font-size: 12px; font-weight: 500; color: var(--text-3); margin-left: 4px; }
+.view[data-mode="bpm"] .bp-tap-note { font-size: 12px; color: var(--text-2); }
+.view[data-mode="bpm"] .bp-tap-use { grid-area: use; }
+
+/* Invoer: groot veld met Bevestig ernaast, daaronder ±-knoppen en Opnieuw horen */
+.view[data-mode="bpm"] .bp-answer { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.view[data-mode="bpm"] .bp-answer-label { font-size: 13px; font-weight: 500; color: var(--text-2); }
+.view[data-mode="bpm"] .bp-guess-row { display: flex; align-items: stretch; gap: 8px; }
+.view[data-mode="bpm"] .bp-guess-box { position: relative; flex: 1 1 auto; min-width: 0; }
+.view[data-mode="bpm"] .bp-guess {
+  width: 100%; height: 88px; padding: 0 64px;
+  text-align: center; font-size: 48px; font-weight: 600; letter-spacing: -0.03em;
+  border-radius: 14px; caret-color: var(--mode);
+}
+.view[data-mode="bpm"] .bp-guess::placeholder { color: var(--text-3); opacity: 0.6; }
+.view[data-mode="bpm"] .bp-guess.is-invalid {
+  border-color: var(--bad);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bad) 22%, transparent);
+  animation: bp-shake 240ms var(--ease);
+}
+@keyframes bp-shake {
+  0%, 100% { transform: none; }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+.view[data-mode="bpm"] .bp-guess-unit {
+  position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+  font-family: var(--mono); font-size: 14px; color: var(--text-3); pointer-events: none;
+}
+.view[data-mode="bpm"] .bp-confirm {
+  flex: none; min-height: 0; padding: 0 22px; border-radius: 14px; font-size: 16px;
+}
+.view[data-mode="bpm"] .bp-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.view[data-mode="bpm"] .bp-step {
+  padding: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 16px;
+  -webkit-touch-callout: none;
+}
+.view[data-mode="bpm"] .bp-err { font-size: 13px; font-weight: 500; color: var(--bad); }
+.view[data-mode="bpm"] .bp-err:empty { display: none; }
+.view[data-mode="bpm"] .bp-replay { width: 100%; }
+.view[data-mode="bpm"] .bp-meta {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 16px;
+  min-height: 20px; font-size: 12px; color: var(--text-3);
+}
+.view[data-mode="bpm"] .bp-keys { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
+.view[data-mode="bpm"] .bp-keys .kbd { height: 20px; min-width: 20px; padding: 0 4px; font-size: 11px; }
+
+/* Smal speelscherm (telefoon): beeld compact in een rij, Bevestig als vierkante knop naast het veld,
+   zodat veld en Bevestig meteen in beeld staan (en boven het schermtoetsenbord blijven). */
+@container bp-stage (max-width: 479px) {
+  .view[data-mode="bpm"] .bp-ask { gap: 18px; }
+  .view[data-mode="bpm"] .bp-visual { flex-direction: row; align-items: center; gap: 16px; }
+  .view[data-mode="bpm"] .bp-pulse { width: 88px; height: 88px; }
+  .view[data-mode="bpm"] .bp-ripple { inset: 8px; }
+  .view[data-mode="bpm"] .bp-core { width: 64px; height: 64px; }
+  .view[data-mode="bpm"] .bp-count { font-size: 28px; }
+  .view[data-mode="bpm"] .bp-beats { flex: 1 1 auto; align-items: flex-start; gap: 10px; }
+  .view[data-mode="bpm"] .bp-dots { justify-content: flex-start; gap: 8px 12px; }
+  .view[data-mode="bpm"] .bp-status { text-align: left; }
+  .view[data-mode="bpm"] .bp-guess { height: 76px; padding: 0 52px; font-size: 42px; }
+  .view[data-mode="bpm"] .bp-guess-unit { right: 14px; }
+  .view[data-mode="bpm"] .bp-confirm { width: 76px; padding: 0; }
+  .view[data-mode="bpm"] .bp-confirm svg { width: 28px; height: 28px; }
+  .view[data-mode="bpm"] .bp-confirm .kbd { display: none; }
+  .view[data-mode="bpm"] .bp-confirm-text {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  .view[data-mode="bpm"] .bp-tapzone { max-width: none; }
+}
+@media (max-width: 860px) {
+  .view[data-mode="bpm"] .bp-stage-top { padding-bottom: 12px; margin-bottom: 18px; }
+}
+
+/* ---------- Uitslag van een ronde ---------- */
+.view[data-mode="bpm"] .bp-reveal { display: flex; flex-direction: column; gap: 22px; animation: bp-in var(--med) var(--ease); }
+.view[data-mode="bpm"] .bp-compare {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; gap: 12px 16px;
+  text-align: center;
+}
+.view[data-mode="bpm"] .bp-compare-sep { align-self: stretch; width: 1px; margin: 6px 0; background: var(--line-2); }
+.view[data-mode="bpm"] .bp-big { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
+.view[data-mode="bpm"] .bp-big-label {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2);
+}
+/* Dezelfde tekens als op de meetlat en in de grafiek: open rondje = echt, gevuld bolletje = jij */
+.view[data-mode="bpm"] .bp-big-label::before { content: ""; flex: none; border-radius: 50%; }
+.view[data-mode="bpm"] .bp-big.is-actual .bp-big-label::before { width: 10px; height: 10px; border: 2px solid var(--text); }
+.view[data-mode="bpm"] .bp-big.is-guess .bp-big-label::before { width: 8px; height: 8px; background: var(--mode); }
+.view[data-mode="bpm"] .bp-big-value {
+  font-size: clamp(44px, 13cqi, 88px); font-weight: 600; line-height: 1; letter-spacing: -0.045em;
+  white-space: nowrap; color: var(--text);
+}
+.view[data-mode="bpm"] .bp-big-value small {
+  font-size: 16px; font-weight: 500; letter-spacing: 0; color: var(--text-3); margin-left: 6px;
+}
+
+.view[data-mode="bpm"] .bp-verdict { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.view[data-mode="bpm"] .bp-tone {
+  display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 999px;
+  font-size: 14px; font-weight: 600;
+  color: var(--tone); background: color-mix(in srgb, var(--tone) 15%, transparent);
+}
+.view[data-mode="bpm"] .bp-diff { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 4px 10px; font-size: 20px; font-weight: 600; }
+.view[data-mode="bpm"] .bp-diff .num { color: var(--tone); }
+.view[data-mode="bpm"] .bp-diff-sep { color: var(--text-3); }
+.view[data-mode="bpm"] .bp-subline { font-size: 13px; color: var(--text-2); }
+.view[data-mode="bpm"] .bp-subline b { font-weight: 600; color: var(--text); }
+/* Uitleg bij het dubbele of halve tempo */
+.view[data-mode="bpm"] .bp-octave {
+  display: flex; align-items: flex-start; gap: 10px; max-width: 56ch; margin-top: 4px;
+  padding: 10px 14px; border-radius: var(--r); text-align: left;
+  font-size: 14px; color: var(--text);
+  background: var(--surface-2); border: 1px solid var(--line-2);
+}
+.view[data-mode="bpm"] .bp-octave svg { flex: none; margin-top: 2px; color: var(--text-2); }
+
+/* Meetlat: echt boven de lijn, jij eronder */
+.view[data-mode="bpm"] .bp-ruler { position: relative; height: 112px; margin: 0 6px; }
+.view[data-mode="bpm"] .bp-ruler-line {
+  position: absolute; left: 0; right: 0; top: 46px; height: 2px; border-radius: 1px; background: var(--line-2);
+}
+.view[data-mode="bpm"] .bp-ruler-gap {
+  position: absolute; top: 44px; height: 6px; border-radius: 3px;
+  background: color-mix(in srgb, var(--tone) 70%, transparent);
+  transition: left 320ms var(--ease), width 320ms var(--ease);
+}
+.view[data-mode="bpm"] .bp-tick {
+  position: absolute; top: 50px; width: 1px; height: 5px; margin-left: -0.5px;
+  background: var(--text-3); opacity: 0.45;
+}
+.view[data-mode="bpm"] .bp-tick.is-major { height: 9px; opacity: 0.9; }
+.view[data-mode="bpm"] .bp-tick-label { position: absolute; top: 62px; transform: translateX(-50%); font-size: 11px; color: var(--text-3); }
+.view[data-mode="bpm"] .bp-mark {
+  position: absolute; display: flex; flex-direction: column; align-items: center;
+  transform: translateX(-50%); white-space: nowrap;
+  transition: left 320ms var(--ease);
+}
+.view[data-mode="bpm"] .bp-mark.is-actual { top: 0; }
+.view[data-mode="bpm"] .bp-mark.is-guess { top: 40px; z-index: 1; }
+.view[data-mode="bpm"] .bp-mark-label {
+  height: 22px; display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--text-2);
+}
+.view[data-mode="bpm"] .bp-mark-label b {
+  font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 600; color: var(--text);
+}
+.view[data-mode="bpm"] .bp-mark-stem { position: relative; width: 2px; border-radius: 1px; }
+.view[data-mode="bpm"] .bp-mark.is-actual .bp-mark-stem { height: 24px; background: var(--text); }
+.view[data-mode="bpm"] .bp-mark.is-actual .bp-mark-stem::after {
+  content: ""; position: absolute; left: 50%; bottom: -6px; width: 12px; height: 12px; margin-left: -6px;
+  border-radius: 50%; border: 2px solid var(--text); background: var(--surface);
+}
+.view[data-mode="bpm"] .bp-mark.is-guess .bp-mark-stem { height: 44px; background: var(--mode); }
+.view[data-mode="bpm"] .bp-mark.is-guess .bp-mark-stem::before {
+  content: ""; position: absolute; left: 50%; top: 2px; width: 8px; height: 8px; margin-left: -4px;
+  border-radius: 50%; background: var(--mode); box-shadow: 0 0 0 2px var(--surface);
+}
+
+.view[data-mode="bpm"] .bp-reveal-actions {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  padding-top: 18px; border-top: 1px solid var(--line);
+}
+.view[data-mode="bpm"] .bp-listen { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.view[data-mode="bpm"] .bp-listen-label { font-size: 13px; color: var(--text-2); margin-right: 2px; }
+.view[data-mode="bpm"] .bp-hear { gap: 6px; padding: 0 14px; }
+.view[data-mode="bpm"] .bp-hear .num { font-weight: 600; }
+.view[data-mode="bpm"] .bp-hear.is-playing { border-color: var(--mode); color: var(--mode); }
+.view[data-mode="bpm"] .bp-next { min-width: 200px; }
+@container bp-stage (max-width: 520px) {
+  .view[data-mode="bpm"] .bp-reveal { gap: 18px; }
+  .view[data-mode="bpm"] .bp-next { width: 100%; }
+}
+
+/* ================= Resultaat ================= */
+.view[data-mode="bpm"] .bp-result { display: flex; flex-direction: column; gap: var(--gap); animation: bp-in var(--med) var(--ease); }
+.view[data-mode="bpm"] .bp-hero { display: flex; align-items: center; flex-wrap: wrap; gap: 24px 32px; }
+.view[data-mode="bpm"] .bp-hero .score-ring { flex: none; }
+.view[data-mode="bpm"] .bp-hero-text { flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.view[data-mode="bpm"] .bp-result-title { font-size: clamp(24px, 3vw, 30px); font-weight: 700; letter-spacing: -0.03em; }
+.view[data-mode="bpm"] .bp-result-title:focus { outline: none; }
+.view[data-mode="bpm"] .bp-hero-lead { font-size: 16px; color: var(--text-2); max-width: 58ch; }
+.view[data-mode="bpm"] .bp-hero-meta { font-size: 13px; color: var(--text-3); }
+.view[data-mode="bpm"] .bp-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.view[data-mode="bpm"] .bp-badges:empty { display: none; }
+.view[data-mode="bpm"] .bp-tile-sub { margin-top: 6px; font-size: 12px; color: var(--text-2); }
+.view[data-mode="bpm"] .bp-result-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+@media (max-width: 640px) {
+  .view[data-mode="bpm"] .bp-result-actions .btn { flex: 1 1 100%; }
+}
+
+.view[data-mode="bpm"] .bp-insights ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.view[data-mode="bpm"] .bp-insights li { position: relative; padding-left: 20px; color: var(--text-2); }
+.view[data-mode="bpm"] .bp-insights li::before {
+  content: ""; position: absolute; left: 2px; top: 0.6em; width: 7px; height: 7px; border-radius: 50%; background: var(--mode);
+}
+.view[data-mode="bpm"] .bp-insights li:first-child { color: var(--text); font-weight: 500; }
+
+/* Grafiek van alle rondes */
+.view[data-mode="bpm"] .bp-rounds-head {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 20px;
+}
+.view[data-mode="bpm"] .bp-rounds-head .panel-title { margin-bottom: 0; }
+.view[data-mode="bpm"] .bp-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--text-2); }
+.view[data-mode="bpm"] .bp-legend span { display: inline-flex; align-items: center; gap: 8px; }
+.view[data-mode="bpm"] .bp-key { display: inline-block; border-radius: 50%; }
+.view[data-mode="bpm"] .bp-key.is-actual { width: 12px; height: 12px; border: 2px solid var(--text); }
+.view[data-mode="bpm"] .bp-key.is-guess { width: 9px; height: 9px; background: var(--mode); }
+
+.view[data-mode="bpm"] .bp-chart {
+  display: grid; grid-template-columns: 32px minmax(0, 1fr); grid-template-rows: 220px auto;
+  column-gap: 10px; row-gap: 8px; margin-top: 8px;
+}
+.view[data-mode="bpm"] .bp-chart-y { position: relative; }
+.view[data-mode="bpm"] .bp-chart-y span { position: absolute; right: 0; transform: translateY(-50%); font-size: 11px; color: var(--text-3); }
+.view[data-mode="bpm"] .bp-chart-plot { position: relative; }
+.view[data-mode="bpm"] .bp-grid { position: absolute; left: 0; right: 0; height: 1px; background: var(--line); }
+.view[data-mode="bpm"] .bp-cols { position: absolute; inset: 0; display: flex; }
+.view[data-mode="bpm"] .bp-col { position: relative; flex: 1 1 0; min-width: 0; border-radius: 6px; transition: background var(--fast); }
+.view[data-mode="bpm"] .bp-col:hover { background: color-mix(in srgb, var(--text) 4%, transparent); }
+.view[data-mode="bpm"] .bp-col-err {
+  position: absolute; left: 50%; width: 3px; margin-left: -1.5px; border-radius: 2px;
+  background: color-mix(in srgb, var(--tone) 75%, transparent);
+}
+.view[data-mode="bpm"] .bp-pt { position: absolute; left: 50%; border-radius: 50%; transform: translate(-50%, -50%); }
+.view[data-mode="bpm"] .bp-pt.is-actual { width: 13px; height: 13px; border: 2px solid var(--text); background: var(--surface); }
+.view[data-mode="bpm"] .bp-pt.is-guess { width: 9px; height: 9px; background: var(--mode); box-shadow: 0 0 0 2px var(--surface); }
+/* Veel rondes: kleinere puntjes zodat ze op een telefoon niet tegen elkaar aan zitten */
+.view[data-mode="bpm"] .bp-chart.is-dense .bp-pt.is-actual { width: 10px; height: 10px; border-width: 1.5px; }
+.view[data-mode="bpm"] .bp-chart.is-dense .bp-pt.is-guess { width: 7px; height: 7px; }
+.view[data-mode="bpm"] .bp-chart.is-dense .bp-col-err { width: 2px; margin-left: -1px; }
+.view[data-mode="bpm"] .bp-chart-x { display: flex; }
+.view[data-mode="bpm"] .bp-chart-x span { flex: 1 1 0; min-width: 0; text-align: center; font-size: 11px; color: var(--text-3); }
+
+/* Tabel van alle rondes */
+.view[data-mode="bpm"] .bp-table-wrap { margin-top: 24px; overflow-x: auto; }
+.view[data-mode="bpm"] .bp-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.view[data-mode="bpm"] .bp-table th {
+  padding: 8px 10px; text-align: left; white-space: nowrap;
+  font-size: 12px; font-weight: 500; color: var(--text-2); border-bottom: 1px solid var(--line-2);
+}
+.view[data-mode="bpm"] .bp-table td { padding: 10px; white-space: nowrap; border-bottom: 1px solid var(--line); }
+.view[data-mode="bpm"] .bp-table tr:last-child td { border-bottom: 0; }
+.view[data-mode="bpm"] .bp-table .is-num { text-align: right; }
+.view[data-mode="bpm"] .bp-cell-diff { font-weight: 600; color: var(--tone); }
+.view[data-mode="bpm"] .bp-cell-word { margin-left: 6px; font-size: 12px; color: var(--text-2); }
+@media (max-width: 520px) {
+  .view[data-mode="bpm"] .bp-table th,
+  .view[data-mode="bpm"] .bp-table td { padding-left: 6px; padding-right: 6px; }
+  .view[data-mode="bpm"] .bp-hide-sm { display: none; }
+}

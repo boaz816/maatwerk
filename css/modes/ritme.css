@@ -1,0 +1,530 @@
+/* Ritme — eigen stijl van deze pagina. Alles staat onder .view[data-mode="ritme"]; voorvoegsel .rt- */
+
+.view[data-mode="ritme"] [hidden] { display: none !important; }
+.view[data-mode="ritme"] .rt-body { display: flex; flex-direction: column; gap: var(--gap); }
+
+/* ================= Instellen ================= */
+
+.view[data-mode="ritme"] .rt-panel-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.view[data-mode="ritme"] .rt-panel-head .panel-title { margin-bottom: 4px; }
+.view[data-mode="ritme"] .rt-panel-sub { font-size: 13px; color: var(--text-2); }
+.view[data-mode="ritme"] .rt-head-tools { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; }
+.view[data-mode="ritme"] .rt-preview-head { min-width: 132px; }
+.view[data-mode="ritme"] .rt-meter-pick { display: flex; align-items: center; gap: 10px; }
+.view[data-mode="ritme"] .rt-meter-label { font-size: 13px; font-weight: 500; color: var(--text-2); }
+
+/* Patroonkaartjes */
+.view[data-mode="ritme"] .rt-patterns {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+}
+.view[data-mode="ritme"] .rt-card {
+  position: relative; display: flex; flex-direction: column; gap: 10px;
+  min-height: 116px; padding: 14px; border-radius: var(--r);
+  background: var(--bg-2); border: 1px solid var(--line); color: var(--text);
+  text-align: left; touch-action: manipulation;
+  transition: border-color var(--fast), background var(--fast), box-shadow var(--fast), transform var(--fast) var(--ease);
+}
+.view[data-mode="ritme"] .rt-card:hover { border-color: var(--line-2); background: var(--surface-2); }
+.view[data-mode="ritme"] .rt-card:active { transform: scale(0.98); }
+.view[data-mode="ritme"] .rt-card[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--mode) 60%, transparent);
+  background: color-mix(in srgb, var(--mode) 8%, var(--surface-2));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mode) 30%, transparent);
+}
+.view[data-mode="ritme"] .rt-card[disabled] { opacity: 0.42; cursor: not-allowed; transform: none; }
+.view[data-mode="ritme"] .rt-card-own:not([aria-pressed="true"]) { border-style: dashed; border-color: var(--line-2); }
+.view[data-mode="ritme"] .rt-card-top { display: flex; align-items: center; gap: 8px; min-height: 22px; }
+.view[data-mode="ritme"] .rt-card-name { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; }
+.view[data-mode="ritme"] .rt-card-tag {
+  margin-left: auto; font-size: 11px; font-weight: 600; color: var(--text-2);
+  padding: 2px 7px; border-radius: 999px; background: var(--surface-3); white-space: nowrap;
+}
+.view[data-mode="ritme"] .rt-card-check {
+  margin-left: auto; width: 20px; height: 20px; border-radius: 50%; flex: none;
+  display: grid; place-items: center; background: var(--mode); color: var(--ink);
+  opacity: 0; transform: scale(0.6);
+  transition: opacity var(--fast), transform var(--med) var(--ease);
+}
+.view[data-mode="ritme"] .rt-card-check svg { stroke-width: 3; }
+.view[data-mode="ritme"] .rt-card[aria-pressed="true"] .rt-card-check { opacity: 1; transform: none; }
+.view[data-mode="ritme"] .rt-card-plus { margin-left: auto; color: var(--text-3); display: grid; }
+.view[data-mode="ritme"] .rt-card-own .rt-card-check { margin-left: auto; }
+.view[data-mode="ritme"] .rt-card-own[aria-pressed="true"] .rt-card-plus { display: none; }
+.view[data-mode="ritme"] .rt-card-own:not([aria-pressed="true"]) .rt-card-check { display: none; }
+.view[data-mode="ritme"] .rt-card-desc { font-size: 12px; line-height: 1.35; color: var(--text-2); margin-top: auto; }
+
+/* Mini-notatie: per tel een groepje blokjes */
+.view[data-mode="ritme"] .rt-mini { display: flex; gap: 5px; height: 18px; }
+.view[data-mode="ritme"] .rt-mini-beat { flex: 1; display: flex; gap: 2px; min-width: 0; }
+.view[data-mode="ritme"] .rt-mini-beat i {
+  flex: 1; min-width: 0; border-radius: 3px; background: var(--surface-3);
+  transition: background var(--fast), box-shadow 80ms;
+}
+.view[data-mode="ritme"] .rt-mini-beat i:first-child:not(.on) { background: color-mix(in srgb, var(--text) 13%, var(--surface-3)); }
+.view[data-mode="ritme"] .rt-mini-beat i.on { background: color-mix(in srgb, var(--mode) 62%, var(--surface-3)); }
+.view[data-mode="ritme"] .rt-card[aria-pressed="true"] .rt-mini-beat i.on { background: var(--mode); }
+.view[data-mode="ritme"] .rt-mini-beat i.is-now { box-shadow: 0 0 0 2px var(--text); }
+
+/* Stappeneditor voor een eigen ritme.
+   De editor is een container: hoeveel tellen naast elkaar passen hangt af van de echte breedte van
+   het paneel, niet van het venster (met zijbalk is het paneel veel smaller dan het venster). */
+.view[data-mode="ritme"] .rt-editor {
+  display: flex; flex-direction: column; gap: 14px;
+  margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line);
+  container-type: inline-size;
+}
+.view[data-mode="ritme"] .rt-editor-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.view[data-mode="ritme"] .rt-editor-title { font-weight: 600; font-size: 15px; }
+.view[data-mode="ritme"] .rt-editor-count { font-size: 13px; color: var(--text-2); }
+.view[data-mode="ritme"] .rt-editor-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.view[data-mode="ritme"] .rt-editor-hint { font-size: 12px; color: var(--text-3); }
+.view[data-mode="ritme"] .rt-steps {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(var(--beats, 4), minmax(0, 1fr));
+}
+.view[data-mode="ritme"] .rt-steps-beat { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.view[data-mode="ritme"] .rt-steps-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3);
+}
+.view[data-mode="ritme"] .rt-steps-row { display: grid; gap: 4px; grid-template-columns: repeat(var(--spb, 4), minmax(44px, 1fr)); }
+
+/* Eén tel is minstens spb × 44 px + 4 px tussenruimte breed (zestienden 188 px, triolen 140 px),
+   met 14 px tussen de tellen. Past de hele maat niet, dan twee tellen per rij; past dat ook niet, één. */
+@container (max-width: 799px) {
+  .view[data-mode="ritme"] .rt-steps[data-spb="4"][data-beats="4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container (max-width: 599px) {
+  .view[data-mode="ritme"] .rt-steps[data-spb="4"][data-beats="3"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container (max-width: 609px) {
+  .view[data-mode="ritme"] .rt-steps[data-spb="3"][data-beats="4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container (max-width: 455px) {
+  .view[data-mode="ritme"] .rt-steps[data-spb="3"][data-beats="3"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+/* Even specifiek als de regels hierboven (twee attributen) en later in het bestand, dus deze winnen */
+@container (max-width: 399px) {
+  .view[data-mode="ritme"] .rt-steps[data-spb="4"][data-beats="4"],
+  .view[data-mode="ritme"] .rt-steps[data-spb="4"][data-beats="3"] { grid-template-columns: 1fr; gap: 12px; }
+}
+@container (max-width: 299px) {
+  .view[data-mode="ritme"] .rt-steps[data-spb="3"][data-beats="4"],
+  .view[data-mode="ritme"] .rt-steps[data-spb="3"][data-beats="3"] { grid-template-columns: 1fr; gap: 12px; }
+}
+/* Oude browsers zonder container queries: grof op vensterbreedte */
+@supports not (container-type: inline-size) {
+  @media (max-width: 1180px) { .view[data-mode="ritme"] .rt-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 470px) { .view[data-mode="ritme"] .rt-steps { grid-template-columns: 1fr; gap: 12px; } }
+}
+.view[data-mode="ritme"] .rt-step {
+  min-height: 52px; min-width: 0; padding: 0;
+  border-radius: 9px; border: 1px solid var(--line-2); background: var(--bg-2);
+  color: var(--text-3); font-family: var(--mono); font-size: 12px; font-weight: 600;
+  display: grid; place-items: center; touch-action: manipulation;
+  transition: background var(--fast), border-color var(--fast), color var(--fast), box-shadow 80ms, transform var(--fast) var(--ease);
+}
+.view[data-mode="ritme"] .rt-step.is-beat { border-color: color-mix(in srgb, var(--text) 20%, transparent); color: var(--text-2); }
+.view[data-mode="ritme"] .rt-step:hover { background: var(--surface-2); color: var(--text); }
+.view[data-mode="ritme"] .rt-step:active { transform: scale(0.95); }
+.view[data-mode="ritme"] .rt-step[aria-pressed="true"] { background: var(--mode); border-color: transparent; color: var(--ink); }
+.view[data-mode="ritme"] .rt-step[aria-pressed="true"]:hover { filter: brightness(1.08); }
+.view[data-mode="ritme"] .rt-step.is-now { box-shadow: 0 0 0 2px var(--text); }
+
+/* Tempo en lengte */
+.view[data-mode="ritme"] .rt-fields {
+  display: grid; gap: 20px 24px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+.view[data-mode="ritme"] .rt-fields .stepper { align-self: flex-start; }
+.view[data-mode="ritme"] .rt-guide {
+  display: flex; flex-direction: column; gap: 14px;
+  margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line);
+}
+.view[data-mode="ritme"] .rt-guide .seg { align-self: flex-start; }
+.view[data-mode="ritme"] .rt-own { display: flex; align-items: center; gap: 4px 14px; flex-wrap: wrap; }
+.view[data-mode="ritme"] .rt-own .switch { font-size: 14px; font-weight: 500; }
+
+/* Tip over vertraging */
+.view[data-mode="ritme"] .rt-tip {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 16px; border-radius: var(--r);
+  background: var(--bg-2); border: 1px solid var(--line);
+  color: var(--text-2); font-size: 14px;
+}
+.view[data-mode="ritme"] .rt-tip svg { flex: none; margin-top: 2px; color: var(--mode); }
+.view[data-mode="ritme"] .rt-tip strong { color: var(--text); font-weight: 600; }
+.view[data-mode="ritme"] .rt-tip a,
+.view[data-mode="ritme"] .rt-advice a {
+  color: var(--text); font-weight: 600; white-space: nowrap;
+  text-decoration-color: var(--mode); text-decoration-thickness: 2px; text-underline-offset: 3px;
+}
+
+/* Start */
+.view[data-mode="ritme"] .rt-actions-wrap { display: flex; align-items: center; gap: 16px 20px; flex-wrap: wrap; padding-top: 4px; }
+.view[data-mode="ritme"] .rt-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.view[data-mode="ritme"] .rt-start { min-width: 168px; }
+.view[data-mode="ritme"] .rt-actions-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.view[data-mode="ritme"] .rt-summary { font-size: 14px; color: var(--text-2); }
+.view[data-mode="ritme"] .rt-warn { font-size: 13px; font-weight: 500; color: var(--warn); }
+.view[data-mode="ritme"] .rt-last { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-3); }
+
+/* ================= Spelen ================= */
+
+.view[data-mode="ritme"] .rt-stage { padding: 0; overflow: hidden; }
+.view[data-mode="ritme"] .rt-stage-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap;
+  padding: 18px 22px; border-bottom: 1px solid var(--line);
+}
+.view[data-mode="ritme"] .rt-phase {
+  display: flex; align-items: center; gap: 12px;
+  font-size: clamp(24px, 3.4vw, 32px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1;
+  transition: color var(--med);
+}
+.view[data-mode="ritme"] .rt-phase-dot {
+  width: 12px; height: 12px; border-radius: 50%; flex: none;
+  background: var(--text-3); transition: background var(--med), box-shadow var(--med);
+}
+.view[data-mode="ritme"] .rt-phase[data-phase="go"] { color: var(--mode); }
+.view[data-mode="ritme"] .rt-phase[data-phase="go"] .rt-phase-dot { background: var(--mode); box-shadow: 0 0 14px var(--mode); }
+.view[data-mode="ritme"] .rt-phase[data-phase="done"] .rt-phase-dot { background: var(--text-2); }
+.view[data-mode="ritme"] .rt-phase-sub { margin-top: 4px; min-height: 21px; font-size: 14px; color: var(--text-2); }
+.view[data-mode="ritme"] .rt-stage-tools { display: flex; align-items: center; gap: 10px; }
+.view[data-mode="ritme"] .rt-counter {
+  display: inline-flex; align-items: center; height: 36px; padding: 0 12px; white-space: nowrap;
+  border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line);
+  font-size: 13px; color: var(--text-2);
+}
+.view[data-mode="ritme"] .rt-stop .kbd { height: 20px; min-width: 0; margin-left: 2px; font-size: 11px; }
+
+/* Het tikvlak: alles onder de kop telt als tikken */
+.view[data-mode="ritme"] .rt-pad {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 24px;
+  min-height: min(68vh, 660px); padding: 26px 22px 20px;
+  cursor: pointer; outline: none;
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.view[data-mode="ritme"] .rt-pad:focus-visible { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--mode) 55%, transparent); }
+.view[data-mode="ritme"] .rt-pad > :not(.rt-flash) { position: relative; width: 100%; max-width: 780px; }
+.view[data-mode="ritme"] .rt-flash {
+  --fc: var(--mode);
+  position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background: radial-gradient(70% 55% at 50% 30%, color-mix(in srgb, var(--fc) 15%, transparent), transparent 72%);
+}
+.view[data-mode="ritme"] .rt-flash[data-kind="ok"] { --fc: var(--ok); }
+.view[data-mode="ritme"] .rt-flash[data-kind="early"] { --fc: var(--early); }
+.view[data-mode="ritme"] .rt-flash[data-kind="late"] { --fc: var(--late); }
+.view[data-mode="ritme"] .rt-flash[data-kind="extra"] { --fc: var(--bad); }
+.view[data-mode="ritme"] .rt-flash[data-kind="intro"] { --fc: var(--text-3); }
+
+/* Tellen */
+.view[data-mode="ritme"] .rt-beats { display: flex; align-items: center; justify-content: center; gap: 16px; height: 20px; }
+.view[data-mode="ritme"] .rt-beat {
+  width: 12px; height: 12px; border-radius: 50%; background: var(--surface-3);
+  transition: background 90ms, transform 120ms var(--ease), box-shadow 90ms;
+}
+.view[data-mode="ritme"] .rt-beat.is-one { width: 16px; height: 16px; box-shadow: inset 0 0 0 2px var(--line-2); }
+.view[data-mode="ritme"] .rt-beat.is-on { background: var(--text); transform: scale(1.2); }
+.view[data-mode="ritme"] .rt-stage[data-phase="go"] .rt-beat.is-on {
+  background: var(--mode); box-shadow: 0 0 12px color-mix(in srgb, var(--mode) 60%, transparent);
+}
+
+/* Grote weergave van de laatste klik */
+.view[data-mode="ritme"] .rt-readout { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.view[data-mode="ritme"] .rt-readout-main { display: flex; align-items: baseline; justify-content: center; gap: 6px; min-height: 1em; }
+.view[data-mode="ritme"] .rt-readout-num {
+  display: inline-block; font-size: clamp(56px, 10vw, 96px); font-weight: 600; line-height: 1;
+  letter-spacing: -0.05em; color: var(--text-3); transition: color var(--fast);
+}
+.view[data-mode="ritme"] .rt-readout-unit { font-family: var(--mono); font-size: 18px; font-weight: 500; color: var(--text-3); }
+.view[data-mode="ritme"] .rt-readout-word { min-height: 24px; font-size: 15px; font-weight: 600; color: var(--text-2); }
+.view[data-mode="ritme"] .rt-readout-word.badge { height: 28px; padding: 0 12px; font-size: 14px; }
+.view[data-mode="ritme"] .rt-readout[data-kind="ok"] .rt-readout-num { color: var(--ok); }
+.view[data-mode="ritme"] .rt-readout[data-kind="early"] .rt-readout-num { color: var(--early); }
+.view[data-mode="ritme"] .rt-readout[data-kind="late"] .rt-readout-num { color: var(--late); }
+.view[data-mode="ritme"] .rt-readout[data-kind="extra"] .rt-readout-num { color: var(--bad); font-size: clamp(40px, 7vw, 64px); }
+.view[data-mode="ritme"] .rt-readout[data-kind="intro"] .rt-readout-num { color: var(--text-2); }
+/* Aftellen in de laatste intromaat: groot, maar rustig */
+.view[data-mode="ritme"] .rt-readout[data-kind="count"] .rt-readout-num { color: var(--text-2); }
+/* Extra klik die net te ver naast een noot lag: toon de afwijking in de kleur van de richting */
+.view[data-mode="ritme"] .rt-readout[data-kind="far"][data-dir="early"] .rt-readout-num { color: var(--early); }
+.view[data-mode="ritme"] .rt-readout[data-kind="far"][data-dir="late"] .rt-readout-num { color: var(--late); }
+
+/* Meter van −100 tot +100 ms */
+.view[data-mode="ritme"] .rt-pad > .rt-meter { max-width: 560px; display: flex; flex-direction: column; gap: 6px; }
+.view[data-mode="ritme"] .rt-meter-ends { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; }
+.view[data-mode="ritme"] .rt-meter-ends .is-early { color: var(--early); }
+.view[data-mode="ritme"] .rt-meter-ends .is-ok { color: var(--ok); }
+.view[data-mode="ritme"] .rt-meter-ends .is-late { color: var(--late); }
+.view[data-mode="ritme"] .rt-meter-track { position: relative; height: 34px; }
+.view[data-mode="ritme"] .rt-meter-track::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px;
+  border-radius: 1px; background: var(--line-2);
+}
+.view[data-mode="ritme"] .rt-meter-zone {
+  position: absolute; top: 4px; bottom: 4px; left: 45%; width: 10%; border-radius: 6px;
+  background: color-mix(in srgb, var(--ok) 18%, transparent);
+}
+.view[data-mode="ritme"] .rt-meter-zero {
+  position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--text-3);
+}
+.view[data-mode="ritme"] .rt-needle {
+  position: absolute; top: 1px; bottom: 1px; left: 50%; width: 4px; margin-left: -2px; border-radius: 2px;
+  background: var(--text); box-shadow: 0 0 0 2px var(--surface);
+  transition: left var(--med) var(--ease), background var(--fast);
+}
+.view[data-mode="ritme"] .rt-needle[data-kind="ok"] { background: var(--ok); }
+.view[data-mode="ritme"] .rt-needle[data-kind="early"] { background: var(--early); }
+.view[data-mode="ritme"] .rt-needle[data-kind="late"] { background: var(--late); }
+.view[data-mode="ritme"] .rt-needle[data-kind="intro"] { background: var(--text-3); }
+.view[data-mode="ritme"] .rt-trail i {
+  position: absolute; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%;
+  background: var(--text-3);
+}
+.view[data-mode="ritme"] .rt-trail i[data-kind="ok"] { background: var(--ok); }
+.view[data-mode="ritme"] .rt-trail i[data-kind="early"] { background: var(--early); }
+.view[data-mode="ritme"] .rt-trail i[data-kind="late"] { background: var(--late); }
+.view[data-mode="ritme"] .rt-meter-scale { position: relative; height: 16px; font-size: 11px; color: var(--text-3); }
+.view[data-mode="ritme"] .rt-meter-scale span { position: absolute; top: 0; transform: translateX(-50%); }
+.view[data-mode="ritme"] .rt-meter-scale span:first-child { transform: none; }
+.view[data-mode="ritme"] .rt-meter-scale span:last-child { transform: translateX(-100%); }
+
+/* Tijdlijn van de huidige maat */
+.view[data-mode="ritme"] .rt-lane { display: flex; flex-direction: column; gap: 8px; }
+.view[data-mode="ritme"] .rt-lane-top { display: flex; align-items: center; justify-content: space-between; gap: 8px 14px; flex-wrap: wrap; font-size: 13px; }
+.view[data-mode="ritme"] .rt-lane-title { font-weight: 600; color: var(--text-2); }
+.view[data-mode="ritme"] .rt-lane-legend { display: flex; gap: 14px; font-size: 12px; color: var(--text-3); }
+.view[data-mode="ritme"] .rt-lane-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.view[data-mode="ritme"] .rt-lane-legend i { display: inline-block; flex: none; }
+.view[data-mode="ritme"] .rt-lane-legend .is-note { width: 4px; height: 14px; border-radius: 2px; background: var(--text-3); }
+.view[data-mode="ritme"] .rt-lane-legend .is-mark { width: 10px; height: 10px; border-radius: 50%; background: var(--text); }
+.view[data-mode="ritme"] .rt-lane-box {
+  padding: 0 22px; border-radius: var(--r); background: var(--bg-2); border: 1px solid var(--line);
+}
+.view[data-mode="ritme"] .rt-track { --mid: 58px; position: relative; height: 140px; }
+.view[data-mode="ritme"] .rt-gl { position: absolute; top: calc(var(--mid) - 24px); height: 48px; width: 1px; margin-left: -0.5px; background: var(--line); }
+.view[data-mode="ritme"] .rt-gl.is-beat { top: calc(var(--mid) - 36px); height: 72px; background: var(--line-2); }
+.view[data-mode="ritme"] .rt-gl.is-bar { top: calc(var(--mid) - 44px); height: 88px; background: color-mix(in srgb, var(--text) 20%, transparent); }
+.view[data-mode="ritme"] .rt-lane-beats { position: absolute; left: 0; right: 0; bottom: 8px; height: 16px; font-size: 12px; color: var(--text-3); }
+.view[data-mode="ritme"] .rt-lane-beats span { position: absolute; transform: translateX(-50%); }
+.view[data-mode="ritme"] .rt-lane-notes,
+.view[data-mode="ritme"] .rt-lane-marks { position: absolute; inset: 0; }
+.view[data-mode="ritme"] .rt-note {
+  position: absolute; top: calc(var(--mid) - 17px); width: 6px; height: 34px; margin-left: -3px; border-radius: 3px;
+  background: var(--surface-3); box-shadow: inset 0 0 0 1px var(--line-2);
+  transition: background var(--fast), box-shadow var(--fast);
+}
+.view[data-mode="ritme"] .rt-note.is-past { background: var(--text-2); box-shadow: none; }
+.view[data-mode="ritme"] .rt-lane[data-phase="go"] .rt-note { background: color-mix(in srgb, var(--mode) 30%, var(--surface-3)); box-shadow: none; }
+.view[data-mode="ritme"] .rt-lane[data-phase="go"] .rt-note.is-past { background: var(--mode); }
+.view[data-mode="ritme"] .rt-lane .rt-note.is-miss { background: color-mix(in srgb, var(--bad) 45%, var(--surface-3)); }
+.view[data-mode="ritme"] .rt-note.is-miss::after {
+  content: "×"; position: absolute; left: 50%; top: 100%; transform: translateX(-50%);
+  font-size: 15px; font-weight: 700; line-height: 1.2; color: var(--bad);
+}
+.view[data-mode="ritme"] .rt-mark {
+  position: absolute; top: calc(var(--mid) - 6px); width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; z-index: 2;
+  background: var(--text); box-shadow: 0 0 0 2px var(--bg-2);
+  animation: rt-pop var(--med) var(--ease);
+}
+.view[data-mode="ritme"] .rt-mark[data-kind="ok"] { background: var(--ok); }
+.view[data-mode="ritme"] .rt-mark[data-kind="early"] { background: var(--early); }
+.view[data-mode="ritme"] .rt-mark[data-kind="late"] { background: var(--late); }
+.view[data-mode="ritme"] .rt-mark[data-kind="extra"] { background: var(--bg-2); box-shadow: inset 0 0 0 2px var(--bad), 0 0 0 2px var(--bg-2); }
+.view[data-mode="ritme"] .rt-mark[data-kind="intro"] { background: var(--text-3); width: 10px; height: 10px; margin-left: -5px; top: calc(var(--mid) - 5px); }
+.view[data-mode="ritme"] .rt-mark-label {
+  position: absolute; left: 50%; bottom: calc(100% + 18px); transform: translateX(-50%);
+  font-size: 12px; font-weight: 600; line-height: 1; white-space: nowrap; color: var(--text);
+}
+.view[data-mode="ritme"] .rt-mark.is-low .rt-mark-label { bottom: auto; top: calc(100% + 18px); }
+.view[data-mode="ritme"] .rt-mark[data-kind="ok"] .rt-mark-label { color: var(--ok); }
+.view[data-mode="ritme"] .rt-mark[data-kind="early"] .rt-mark-label { color: var(--early); }
+.view[data-mode="ritme"] .rt-mark[data-kind="late"] .rt-mark-label { color: var(--late); }
+.view[data-mode="ritme"] .rt-mark[data-kind="extra"] .rt-mark-label { color: var(--bad); }
+.view[data-mode="ritme"] .rt-mark-label.is-word { font-family: var(--font); }
+.view[data-mode="ritme"] .rt-mark[data-kind="intro"] .rt-mark-label { color: var(--text-3); }
+.view[data-mode="ritme"] .rt-head { position: absolute; inset: 0; z-index: 3; pointer-events: none; will-change: transform; }
+.view[data-mode="ritme"] .rt-head::before {
+  content: ""; position: absolute; left: -1px; top: 8px; bottom: 30px; width: 2px; border-radius: 1px;
+  background: var(--text); box-shadow: 0 0 12px color-mix(in srgb, var(--text) 30%, transparent);
+}
+.view[data-mode="ritme"] .rt-lane[data-phase="go"] .rt-head::before {
+  background: var(--mode); box-shadow: 0 0 14px color-mix(in srgb, var(--mode) 70%, transparent);
+}
+/* 'Stilte': na de intro geen afspeelkop en geen live 'gemist'-teller; die zouden de tel verraden */
+.view[data-mode="ritme"] .rt-stage[data-blind] .rt-head { opacity: 0; }
+.view[data-mode="ritme"] .rt-stage[data-blind] .rt-count[data-kind="miss"] { display: none; }
+@keyframes rt-pop { from { transform: scale(0.3); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Overzicht van alle maten */
+.view[data-mode="ritme"] .rt-overview { display: flex; gap: 10px; }
+.view[data-mode="ritme"] .rt-ov-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.view[data-mode="ritme"] .rt-ov-bars { display: flex; gap: 3px; }
+.view[data-mode="ritme"] .rt-ov-seg {
+  position: relative; flex: 1; min-width: 3px; height: 8px; border-radius: 4px; overflow: hidden; background: var(--surface-3);
+}
+.view[data-mode="ritme"] .rt-ov-seg.is-now { box-shadow: inset 0 0 0 1px var(--line-2); }
+.view[data-mode="ritme"] .rt-ov-seg i {
+  position: absolute; inset: 0; transform-origin: left center; transform: scaleX(0); background: var(--text-2);
+}
+.view[data-mode="ritme"] .rt-ov-group.is-play .rt-ov-seg i { background: var(--mode); }
+.view[data-mode="ritme"] .rt-ov-cap { font-size: 12px; font-weight: 500; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.view[data-mode="ritme"] .rt-ov-group.is-now .rt-ov-cap { color: var(--text); }
+
+/* Tellers en hulptekst */
+.view[data-mode="ritme"] .rt-counts { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.view[data-mode="ritme"] .rt-count {
+  display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 12px;
+  border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line);
+  font-size: 13px; color: var(--text-2);
+}
+.view[data-mode="ritme"] .rt-count b { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text); }
+.view[data-mode="ritme"] .rt-count .faint { font-family: var(--mono); font-size: 12px; margin-left: -3px; }
+.view[data-mode="ritme"] .rt-count i { width: 8px; height: 8px; border-radius: 50%; background: var(--text-3); }
+.view[data-mode="ritme"] .rt-count[data-kind="ok"] i { background: var(--ok); }
+.view[data-mode="ritme"] .rt-count[data-kind="miss"] i { background: var(--bad); }
+.view[data-mode="ritme"] .rt-count[data-kind="extra"] i { background: transparent; box-shadow: inset 0 0 0 2px var(--bad); }
+.view[data-mode="ritme"] .rt-hint { margin-top: auto; text-align: center; font-size: 13px; color: var(--text-3); }
+.view[data-mode="ritme"] .rt-hint .kbd { margin: 0 1px; }
+
+/* ================= Resultaat ================= */
+
+.view[data-mode="ritme"] .rt-result { display: flex; flex-direction: column; gap: var(--gap); }
+.view[data-mode="ritme"] .rt-res-hero { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px; align-items: center; }
+.view[data-mode="ritme"] .rt-res-ring .score-ring { width: 148px; height: 148px; }
+.view[data-mode="ritme"] .rt-res-ring .score-ring > div { width: 124px; height: 124px; }
+.view[data-mode="ritme"] .rt-res-ring .score-ring b { font-size: 40px; }
+.view[data-mode="ritme"] .rt-res-text { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; min-width: 0; }
+.view[data-mode="ritme"] .rt-res-title { font-size: clamp(26px, 3.6vw, 34px); font-weight: 700; letter-spacing: -0.035em; outline: none; }
+.view[data-mode="ritme"] .rt-res-lead { font-size: 16px; color: var(--text-2); max-width: 62ch; }
+.view[data-mode="ritme"] .rt-res-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.view[data-mode="ritme"] .rt-res-prev { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-2); }
+.view[data-mode="ritme"] .rt-res-prev svg { flex: none; color: var(--text-3); }
+.view[data-mode="ritme"] .rt-res-prev.is-record { color: var(--text); font-weight: 600; }
+.view[data-mode="ritme"] .rt-res-prev.is-record svg { color: var(--warn); }
+.view[data-mode="ritme"] .rt-res-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; transition: opacity var(--med) var(--ease); }
+/* De eerste 0,7 s na het einde: knoppen nog niet klikbaar (tegen doortikken), zichtbaar gedimd */
+.view[data-mode="ritme"] .rt-res-actions.is-arming { opacity: 0.5; }
+.view[data-mode="ritme"] .rt-again .kbd {
+  height: 20px; min-width: 0; margin-left: 2px; font-size: 11px;
+  background: color-mix(in srgb, var(--ink) 16%, transparent);
+  border-color: color-mix(in srgb, var(--ink) 30%, transparent); color: var(--ink);
+}
+
+.view[data-mode="ritme"] .rt-tile-sub { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; color: var(--text-3); }
+.view[data-mode="ritme"] .rt-tile-sub i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.view[data-mode="ritme"] .rt-tile-sub i[data-kind="ok"] { background: var(--ok); }
+.view[data-mode="ritme"] .rt-tile-sub i[data-kind="early"] { background: var(--early); }
+.view[data-mode="ritme"] .rt-tile-sub i[data-kind="late"] { background: var(--late); }
+
+/* Grafiek */
+.view[data-mode="ritme"] .rt-chart-host { position: relative; width: 100%; min-height: 220px; }
+.view[data-mode="ritme"] .rt-chart-svg { display: block; width: 100%; height: auto; overflow: visible; border-radius: 6px; }
+.view[data-mode="ritme"] .rt-chart-svg:focus-visible { outline: 2px solid var(--mode); outline-offset: 4px; }
+.view[data-mode="ritme"] .rt-c-zone { fill: color-mix(in srgb, var(--ok) 12%, transparent); }
+.view[data-mode="ritme"] .rt-c-grid { stroke: var(--line); stroke-width: 1; }
+.view[data-mode="ritme"] .rt-c-zero { stroke: var(--text-3); stroke-width: 1; }
+.view[data-mode="ritme"] .rt-c-bar { stroke: var(--line); stroke-width: 1; }
+.view[data-mode="ritme"] .rt-c-tick { fill: var(--text-3); font-family: var(--mono); font-size: 11px; }
+.view[data-mode="ritme"] .rt-c-side { fill: var(--text-2); font-size: 11px; font-weight: 600; }
+.view[data-mode="ritme"] .rt-c-mean { stroke: var(--text-2); stroke-width: 1.5; stroke-dasharray: 5 4; opacity: 0.85; }
+.view[data-mode="ritme"] .rt-c-line { fill: none; stroke: var(--text-3); stroke-width: 1.5; opacity: 0.45; stroke-linejoin: round; stroke-linecap: round; }
+.view[data-mode="ritme"] .rt-c-cross { stroke: var(--text-3); stroke-width: 1; }
+.view[data-mode="ritme"] .rt-c-dot { fill: var(--text-2); stroke: var(--surface); stroke-width: 2; transition: stroke var(--fast); }
+.view[data-mode="ritme"] .rt-c-dot[data-kind="ok"] { fill: var(--ok); }
+.view[data-mode="ritme"] .rt-c-dot[data-kind="early"] { fill: var(--early); }
+.view[data-mode="ritme"] .rt-c-dot[data-kind="late"] { fill: var(--late); }
+.view[data-mode="ritme"] .rt-c-range { stroke: var(--text-3); stroke-width: 2; stroke-linecap: round; opacity: 0.7; }
+.view[data-mode="ritme"] .rt-c-range[data-kind="ok"] { stroke: var(--ok); }
+.view[data-mode="ritme"] .rt-c-range[data-kind="early"] { stroke: var(--early); }
+.view[data-mode="ritme"] .rt-c-range[data-kind="late"] { stroke: var(--late); }
+.view[data-mode="ritme"] .rt-c-item.is-hot .rt-c-dot { stroke: var(--text); }
+.view[data-mode="ritme"] .rt-c-item.is-hot .rt-c-range { opacity: 1; }
+.view[data-mode="ritme"] .rt-c-miss line { stroke: var(--bad); stroke-width: 2; stroke-linecap: round; }
+.view[data-mode="ritme"] .rt-c-item.is-hot .rt-c-miss line { stroke-width: 3; }
+.view[data-mode="ritme"] .rt-tooltip {
+  position: absolute; z-index: 5; pointer-events: none;
+  transform: translate(-50%, calc(-100% - 12px));
+  display: flex; flex-direction: column; gap: 2px;
+  width: max-content; max-width: min(260px, calc(100% - 8px));
+  padding: 8px 11px; border-radius: 10px; white-space: normal;
+  background: var(--surface-3); border: 1px solid var(--line-2);
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--bg) 80%, transparent);
+  font-size: 12px; line-height: 1.35; color: var(--text-2);
+}
+.view[data-mode="ritme"] .rt-tooltip b { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 14px; color: var(--text); }
+.view[data-mode="ritme"] .rt-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px; font-size: 12px; color: var(--text-2); }
+.view[data-mode="ritme"] .rt-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.view[data-mode="ritme"] .rt-legend i { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--text-3); }
+.view[data-mode="ritme"] .rt-legend i[data-kind="ok"] { background: var(--ok); }
+.view[data-mode="ritme"] .rt-legend i[data-kind="early"] { background: var(--early); }
+.view[data-mode="ritme"] .rt-legend i[data-kind="late"] { background: var(--late); }
+.view[data-mode="ritme"] .rt-legend i.is-mean {
+  width: 18px; height: 0; border-radius: 0; background: none; border-top: 2px dashed var(--text-2);
+}
+.view[data-mode="ritme"] .rt-legend-x { color: var(--bad); font-size: 14px; line-height: 1; }
+
+/* Tips */
+.view[data-mode="ritme"] .rt-advice { display: flex; align-items: flex-start; gap: 16px; }
+.view[data-mode="ritme"] .rt-advice .panel-title { margin-bottom: 10px; }
+.view[data-mode="ritme"] .rt-advice-icon {
+  width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 12px;
+  background: color-mix(in srgb, var(--mode) 14%, transparent); color: var(--mode);
+}
+.view[data-mode="ritme"] .rt-advice ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; color: var(--text-2); }
+.view[data-mode="ritme"] .rt-advice-body { flex: 1; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+.view[data-mode="ritme"] .rt-advice-body ul { align-self: stretch; }
+.view[data-mode="ritme"] .rt-advice-btn { margin-top: 14px; }
+
+/* Lijst per noot */
+.view[data-mode="ritme"] .rt-list { display: flex; flex-direction: column; gap: 10px; }
+.view[data-mode="ritme"] .rt-list-row { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 12px; align-items: start; }
+.view[data-mode="ritme"] .rt-list-bar { padding-top: 3px; font-size: 13px; font-weight: 600; color: var(--text-3); white-space: nowrap; }
+.view[data-mode="ritme"] .rt-list-notes { display: flex; flex-wrap: wrap; gap: 5px; }
+.view[data-mode="ritme"] .rt-nb { min-width: 44px; justify-content: center; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.view[data-mode="ritme"] .rt-list-foot { margin-top: 14px; font-size: 13px; color: var(--text-3); }
+
+/* ================= Kleine schermen ================= */
+
+/* Lage of smalle schermen: het speelscherm zo veel mogelijk op één scherm, zodat het tikvlak niet
+   onder de onderbalk verdwijnt. Het overzicht en de getallen onder de meter zijn bijzaak. */
+@media (max-width: 640px), (max-height: 720px) {
+  .view[data-mode="ritme"] .rt-overview,
+  .view[data-mode="ritme"] .rt-meter-scale { display: none; }
+}
+@media (max-width: 640px) {
+  .view[data-mode="ritme"] .panel { padding: 18px; }
+  .view[data-mode="ritme"] .rt-stage { padding: 0; }
+  .view[data-mode="ritme"] .rt-patterns { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .view[data-mode="ritme"] .rt-card { min-height: 108px; padding: 12px; }
+  .view[data-mode="ritme"] .rt-stage-top { padding: 14px 16px; }
+  .view[data-mode="ritme"] .rt-pad { gap: 18px; padding: 18px 14px 16px; min-height: 0; }
+  .view[data-mode="ritme"] .rt-lane-box { padding: 0 14px; }
+  .view[data-mode="ritme"] .rt-lane-legend { display: none; }
+  .view[data-mode="ritme"] .rt-res-hero { grid-template-columns: 1fr; gap: 18px; }
+  .view[data-mode="ritme"] .rt-res-actions .btn { flex: 1 1 auto; }
+  .view[data-mode="ritme"] .rt-advice { flex-direction: column; gap: 12px; }
+  .view[data-mode="ritme"] .rt-list-row { grid-template-columns: 1fr; gap: 6px; }
+  .view[data-mode="ritme"] .rt-actions,
+  .view[data-mode="ritme"] .rt-actions .btn { flex: 1 1 auto; }
+}
+@media (max-width: 640px) {
+  /* Speelscherm past zo veel mogelijk op één telefoonscherm */
+  .view[data-mode="ritme"] .rt-stage-top { flex-wrap: nowrap; }
+  .view[data-mode="ritme"] .rt-phase-wrap { min-width: 0; }
+  .view[data-mode="ritme"] .rt-counter { display: none; }
+  .view[data-mode="ritme"] .rt-stop .kbd,
+  .view[data-mode="ritme"] .rt-again .kbd { display: none; }
+  .view[data-mode="ritme"] .rt-readout-num { font-size: clamp(48px, 15vw, 72px); }
+  .view[data-mode="ritme"] .rt-track { --mid: 52px; height: 124px; }
+  .view[data-mode="ritme"] .rt-hint { display: none; }
+}
+@media (max-width: 480px) {
+  .view[data-mode="ritme"] .rt-guide .seg { display: flex; flex-direction: column; align-self: stretch; }
+  .view[data-mode="ritme"] .rt-guide .seg button { text-align: left; }
+  .view[data-mode="ritme"] .rt-head-tools { width: 100%; justify-content: space-between; }
+}

@@ -1,0 +1,374 @@
+/* Maatsoort — eigen stijl van deze pagina. Alles gescoped onder .view[data-mode="maatsoort"], voorvoegsel .ms- */
+
+/* ---------- Algemeen ---------- */
+.view[data-mode="maatsoort"] .ms-sig {
+  font-weight: 700; font-size: 15px; color: var(--text);
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; height: 28px; padding: 0 8px; border-radius: 8px;
+  background: var(--surface-3); border: 1px solid var(--line-2);
+}
+.view[data-mode="maatsoort"] .ms-dot { color: var(--text-3); margin: 0 8px; }
+.view[data-mode="maatsoort"] .btn .kbd { margin-left: 2px; height: 22px; min-width: 22px; font-size: 11px; }
+.view[data-mode="maatsoort"] .btn-primary .kbd {
+  background: color-mix(in srgb, var(--ink) 14%, transparent);
+  border-color: color-mix(in srgb, var(--ink) 25%, transparent);
+  color: var(--ink);
+}
+@media (hover: none) and (pointer: coarse) {
+  .view[data-mode="maatsoort"] .ms-hide-touch { display: none !important; }
+}
+
+/* ---------- Instellen ---------- */
+.view[data-mode="maatsoort"] .ms-setup {
+  display: grid; gap: var(--gap); align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+}
+@media (max-width: 1040px) {
+  .view[data-mode="maatsoort"] .ms-setup { grid-template-columns: minmax(0, 1fr); }
+}
+.view[data-mode="maatsoort"] .ms-col { display: flex; flex-direction: column; gap: var(--gap); min-width: 0; }
+.view[data-mode="maatsoort"] .ms-fields { gap: 22px; }
+.view[data-mode="maatsoort"] .ms-level { gap: 10px; }
+.view[data-mode="maatsoort"] .ms-level-desc {
+  display: flex; align-items: flex-start; gap: 10px;
+  min-height: 48px; padding: 12px 14px; border-radius: var(--r);
+  background: var(--bg-2); border: 1px solid var(--line);
+  color: var(--text-2); font-size: 14px; line-height: 1.45;
+}
+.view[data-mode="maatsoort"] .ms-level-desc svg { flex: none; margin-top: 1px; color: var(--mode); }
+
+.view[data-mode="maatsoort"] .ms-start { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.view[data-mode="maatsoort"] .ms-start-btn { min-width: 168px; }
+.view[data-mode="maatsoort"] .ms-start-hint { color: var(--text-2); font-size: 14px; }
+
+/* Spiekbriefje */
+.view[data-mode="maatsoort"] .ms-sheet { display: flex; flex-direction: column; gap: 10px; }
+.view[data-mode="maatsoort"] .ms-sheet-row {
+  display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 4px 14px; align-items: start;
+  padding: 14px; border-radius: var(--r);
+  background: var(--bg-2); border: 1px solid var(--line);
+  transition: border-color var(--fast), background var(--fast);
+}
+.view[data-mode="maatsoort"] .ms-sheet-row.is-playing {
+  border-color: color-mix(in srgb, var(--mode) 50%, transparent);
+  background: color-mix(in srgb, var(--mode) 5%, var(--bg-2));
+}
+.view[data-mode="maatsoort"] .ms-sheet-play { grid-row: span 2; border-radius: 50%; }
+.view[data-mode="maatsoort"] .ms-sheet-row.is-playing .ms-sheet-play {
+  background: var(--mode); color: var(--ink); border-color: transparent;
+}
+.view[data-mode="maatsoort"] .ms-sheet-text { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.view[data-mode="maatsoort"] .ms-sheet-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 600; font-size: 14px; }
+.view[data-mode="maatsoort"] .ms-sheet-tip { color: var(--text-2); font-size: 13px; line-height: 1.45; }
+.view[data-mode="maatsoort"] .ms-sheet-fig { grid-column: 2; min-width: 0; padding-top: 6px; }
+@media (max-width: 520px) {
+  .view[data-mode="maatsoort"] .ms-sheet-row { grid-template-columns: 44px minmax(0, 1fr); }
+  .view[data-mode="maatsoort"] .ms-sheet-fig { grid-column: 1 / -1; }
+}
+
+/* ---------- Maatraster (SVG) ---------- */
+.view[data-mode="maatsoort"] .ms-measure { display: block; width: 100%; height: auto; overflow: visible; }
+.view[data-mode="maatsoort"] .ms-m-group { fill: var(--surface); }
+.view[data-mode="maatsoort"] .ms-m-group.is-first { fill: color-mix(in srgb, var(--mode) 9%, var(--surface)); }
+.view[data-mode="maatsoort"] .ms-m-staff { stroke: var(--line-2); stroke-width: 1.5; }
+.view[data-mode="maatsoort"] .ms-m-bar { stroke: var(--text-3); stroke-width: 2; }
+.view[data-mode="maatsoort"] .ms-m-sig {
+  fill: var(--text); font-family: var(--mono); font-weight: 700; font-size: 25px; text-anchor: middle;
+}
+.view[data-mode="maatsoort"] .ms-m-beam { fill: var(--text); }
+.view[data-mode="maatsoort"] .ms-m-note { color: var(--text); }
+.view[data-mode="maatsoort"] .ms-m-note ellipse { fill: currentColor; transition: fill var(--fast); }
+.view[data-mode="maatsoort"] .ms-m-note line { stroke: currentColor; stroke-width: 1.7; transition: stroke var(--fast); }
+.view[data-mode="maatsoort"] .ms-m-note.is-on { color: var(--mode); }
+.view[data-mode="maatsoort"] .ms-m-acc { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.view[data-mode="maatsoort"] .ms-m-acc.lv-3 { stroke: var(--mode); stroke-width: 2.8; }
+.view[data-mode="maatsoort"] .ms-m-acc.lv-2 { stroke: var(--text); stroke-width: 2.2; }
+.view[data-mode="maatsoort"] .ms-m-acc.lv-1 { stroke: var(--text-2); stroke-width: 1.8; }
+/* Telling onder de noten. In een SVG zijn px tekeneenheden, en het raster schaalt mee met zijn vak.
+   --ms-k (tekenbreedte / schermbreedte, gezet door de pagina) houdt de letters op het scherm tussen
+   ±11 en 15 px (tellen 13–17 px), hoe smal of breed het raster ook staat. */
+.view[data-mode="maatsoort"] .ms-m-count {
+  fill: var(--text-2); font-family: var(--mono); text-anchor: middle;
+  font-size: clamp(calc(11px * var(--ms-k, 1)), 12px, calc(15px * var(--ms-k, 1)));
+  transition: fill var(--fast);
+}
+.view[data-mode="maatsoort"] .ms-m-count.is-beat {
+  fill: var(--text); font-weight: 600;
+  font-size: clamp(calc(13px * var(--ms-k, 1)), 14px, calc(17px * var(--ms-k, 1)));
+}
+.view[data-mode="maatsoort"] .ms-m-count.is-one { font-weight: 700; }
+.view[data-mode="maatsoort"] .ms-m-count.is-on { fill: var(--mode); }
+.view[data-mode="maatsoort"] .ms-m-start path { fill: var(--mode); }
+.view[data-mode="maatsoort"] .ms-m-start text {
+  fill: var(--mode); font-family: var(--font); font-weight: 600; text-anchor: middle; letter-spacing: 0.02em;
+  font-size: clamp(calc(11px * var(--ms-k, 1)), 12px, calc(14px * var(--ms-k, 1)));
+}
+
+/* ---------- Spelen ---------- */
+/* Tijdens het spelen is de inleiding boven de pagina overbodig; zo staan stage en knoppen hoger */
+.view[data-mode="maatsoort"].ms-in-play .page-head .lead { display: none; }
+.view[data-mode="maatsoort"] .ms-play { display: flex; flex-direction: column; gap: var(--gap); }
+.view[data-mode="maatsoort"] .ms-topbar { display: flex; align-items: center; gap: 12px 18px; flex-wrap: wrap; }
+.view[data-mode="maatsoort"] .ms-round-label { font-weight: 600; font-size: 15px; white-space: nowrap; }
+.view[data-mode="maatsoort"] .ms-round-label .num { font-size: 16px; }
+.view[data-mode="maatsoort"] .ms-pips { display: flex; flex-wrap: wrap; gap: 5px; flex: 1; min-width: 0; }
+.view[data-mode="maatsoort"] .ms-level-badge { margin-left: auto; }
+.view[data-mode="maatsoort"] .ms-pip {
+  width: 16px; height: 16px; border-radius: 50%; flex: none;
+  display: grid; place-items: center;
+  background: var(--surface-3);
+  transition: background var(--fast), box-shadow var(--fast);
+}
+.view[data-mode="maatsoort"] .ms-pip svg { stroke-width: 3.2; }
+.view[data-mode="maatsoort"] .ms-pip.is-current { background: transparent; box-shadow: inset 0 0 0 2px var(--mode); }
+.view[data-mode="maatsoort"] .ms-pip.is-ok { background: color-mix(in srgb, var(--ok) 22%, transparent); color: var(--ok); }
+.view[data-mode="maatsoort"] .ms-pip.is-bad { background: color-mix(in srgb, var(--bad) 22%, transparent); color: var(--bad); }
+
+.view[data-mode="maatsoort"] .ms-stage { min-height: 340px; display: flex; flex-direction: column; }
+.view[data-mode="maatsoort"] .ms-stage:focus { outline: none; }
+.view[data-mode="maatsoort"] .ms-stage-inner { flex: 1; display: flex; flex-direction: column; }
+
+/* Luisteren: rustige puls in het midden */
+.view[data-mode="maatsoort"] .ms-listen {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 20px; text-align: center; padding: 12px 0 4px;
+}
+.view[data-mode="maatsoort"] .ms-orb {
+  --ms-r0: 0.59; /* kern / orb: daar begint een golf */
+  position: relative; width: 156px; height: 156px; flex: none; display: grid; place-items: center;
+}
+.view[data-mode="maatsoort"] .ms-core {
+  position: relative; z-index: 1;
+  width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center;
+  color: var(--mode);
+  background: color-mix(in srgb, var(--mode) 12%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--mode) 32%, transparent);
+  transition: box-shadow var(--med) var(--ease);
+}
+.view[data-mode="maatsoort"] .ms-stage.is-playing .ms-core {
+  box-shadow: 0 0 40px -6px color-mix(in srgb, var(--mode) 45%, transparent);
+}
+.view[data-mode="maatsoort"] .ms-core.is-beat { animation: ms-beat 200ms var(--ease); }
+@keyframes ms-beat {
+  from { transform: scale(1.06); }
+  to { transform: scale(1); }
+}
+.view[data-mode="maatsoort"] .ms-ripple {
+  position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  border: 1.5px solid color-mix(in srgb, var(--mode) 70%, transparent);
+  opacity: 0; transform: scale(var(--ms-r0));
+}
+.view[data-mode="maatsoort"] .ms-ripple.is-go { animation: ms-ripple 720ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards; }
+@keyframes ms-ripple {
+  from { opacity: 0.55; transform: scale(var(--ms-r0)); }
+  to { opacity: 0; transform: scale(1.12); }
+}
+.view[data-mode="maatsoort"] .ms-status { display: flex; flex-direction: column; gap: 6px; max-width: 46ch; }
+.view[data-mode="maatsoort"] .ms-status h2 { font-size: 22px; font-weight: 650; }
+.view[data-mode="maatsoort"] .ms-status p { color: var(--text-2); font-size: 14px; }
+.view[data-mode="maatsoort"] .ms-progress {
+  width: min(360px, 100%); height: 4px; border-radius: 2px; overflow: hidden; background: var(--surface-3);
+}
+.view[data-mode="maatsoort"] .ms-progress > span {
+  display: block; height: 100%; background: var(--mode); border-radius: 2px;
+  transform-origin: left center; transform: scaleX(0);
+}
+.view[data-mode="maatsoort"] .ms-listen-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; min-height: 44px; }
+.view[data-mode="maatsoort"] .ms-replays { font-size: 13px; }
+
+/* Antwoordknoppen */
+.view[data-mode="maatsoort"] .ms-answers {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+}
+@media (max-width: 960px) {
+  .view[data-mode="maatsoort"] .ms-answers { grid-template-columns: repeat(var(--cols-t, 3), minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .view[data-mode="maatsoort"] .ms-answers { grid-template-columns: repeat(var(--cols-m, 3), minmax(0, 1fr)); }
+}
+.view[data-mode="maatsoort"] .ms-answer {
+  position: relative; min-height: 108px; padding: 14px 10px;
+  display: grid; place-items: center;
+  border-radius: var(--r-l); border: 1px solid var(--line-2);
+  background: var(--surface); color: var(--text);
+  box-shadow: var(--shadow);
+  transition: border-color var(--fast), background var(--fast), transform var(--fast), opacity var(--med);
+  user-select: none; -webkit-user-select: none; touch-action: manipulation;
+}
+.view[data-mode="maatsoort"] .ms-answer:hover:not([disabled]) {
+  border-color: color-mix(in srgb, var(--mode) 60%, transparent);
+  background: var(--surface-2);
+}
+.view[data-mode="maatsoort"] .ms-answer:active:not([disabled]) { transform: scale(0.97); }
+.view[data-mode="maatsoort"] .ms-answer[disabled] { cursor: default; }
+.view[data-mode="maatsoort"] .ms-answer .kbd { position: absolute; top: 10px; left: 10px; }
+.view[data-mode="maatsoort"] .ms-answer-mark { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; }
+.view[data-mode="maatsoort"] .ms-frac {
+  display: flex; flex-direction: column; align-items: center;
+  font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 700;
+  font-size: 32px; line-height: 0.92; letter-spacing: -0.03em;
+}
+.view[data-mode="maatsoort"] .ms-answer[data-state="correct"] {
+  border-color: var(--ok); background: color-mix(in srgb, var(--ok) 10%, var(--surface));
+}
+.view[data-mode="maatsoort"] .ms-answer[data-state="correct"] .ms-answer-mark { color: var(--ok); }
+.view[data-mode="maatsoort"] .ms-answer[data-state="wrong"] {
+  border-color: var(--bad); background: color-mix(in srgb, var(--bad) 10%, var(--surface));
+}
+.view[data-mode="maatsoort"] .ms-answer[data-state="wrong"] .ms-answer-mark { color: var(--bad); }
+.view[data-mode="maatsoort"] .ms-answer[data-state="dim"] { opacity: 0.42; }
+/* Vlak voor het fragment start doen de knoppen nog niets: dat zie je aan een zachtere tint */
+.view[data-mode="maatsoort"] .ms-answers.is-waiting .ms-answer { opacity: 0.55; cursor: default; pointer-events: none; }
+
+.view[data-mode="maatsoort"] .ms-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.view[data-mode="maatsoort"] .ms-keys { color: var(--text-3); font-size: 13px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.view[data-mode="maatsoort"] .ms-foot .btn { margin-left: auto; }
+
+/* Feedback */
+.view[data-mode="maatsoort"] .ms-feedback { display: flex; flex-direction: column; gap: 18px; animation: ms-in var(--med) var(--ease); }
+@keyframes ms-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.view[data-mode="maatsoort"] .ms-verdict { display: flex; align-items: flex-start; gap: 14px; }
+.view[data-mode="maatsoort"] .ms-verdict-icon {
+  width: 48px; height: 48px; border-radius: 50%; flex: none; display: grid; place-items: center;
+}
+.view[data-mode="maatsoort"] .ms-verdict.is-ok .ms-verdict-icon { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
+.view[data-mode="maatsoort"] .ms-verdict.is-bad .ms-verdict-icon { background: color-mix(in srgb, var(--bad) 16%, transparent); color: var(--bad); }
+.view[data-mode="maatsoort"] .ms-verdict h2 { font-size: 24px; font-weight: 700; letter-spacing: -0.025em; }
+.view[data-mode="maatsoort"] .ms-verdict.is-ok h2 { color: var(--ok); }
+.view[data-mode="maatsoort"] .ms-verdict.is-bad h2 { color: var(--bad); }
+.view[data-mode="maatsoort"] .ms-explain { font-size: 17px; color: var(--text); margin-top: 4px; }
+.view[data-mode="maatsoort"] .ms-explain b { font-weight: 700; }
+
+.view[data-mode="maatsoort"] .ms-figures { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); }
+.view[data-mode="maatsoort"] .ms-figures.is-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 760px) {
+  .view[data-mode="maatsoort"] .ms-figures.is-two { grid-template-columns: minmax(0, 1fr); }
+}
+.view[data-mode="maatsoort"] .ms-figure {
+  margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 16px 12px; border-radius: var(--r);
+  background: var(--bg-2); border: 1px solid var(--line);
+}
+.view[data-mode="maatsoort"] .ms-figures:not(.is-two) .ms-figure .ms-measure { margin: 0 auto; }
+.view[data-mode="maatsoort"] .ms-figure.is-answer { border-style: dashed; }
+.view[data-mode="maatsoort"] .ms-figure.is-answer .ms-m-acc.lv-3 { stroke: var(--text); }
+.view[data-mode="maatsoort"] .ms-figure.is-answer .ms-m-group.is-first { fill: var(--surface); }
+.view[data-mode="maatsoort"] .ms-figure-cap {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px 16px; flex-wrap: wrap;
+  font-size: 13px; font-weight: 600; color: var(--text-2);
+}
+.view[data-mode="maatsoort"] .ms-figure-cap .num { font-weight: 500; color: var(--text-3); font-size: 12px; }
+
+.view[data-mode="maatsoort"] .ms-why {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 16px; border-radius: var(--r);
+  background: color-mix(in srgb, var(--mode) 7%, var(--surface-2));
+  border: 1px solid color-mix(in srgb, var(--mode) 18%, transparent);
+  font-size: 14px; line-height: 1.5;
+}
+.view[data-mode="maatsoort"] .ms-why svg { flex: none; margin-top: 2px; color: var(--mode); }
+.view[data-mode="maatsoort"] .ms-why b { display: block; margin-bottom: 2px; font-weight: 600; }
+.view[data-mode="maatsoort"] .ms-why p { color: var(--text-2); }
+.view[data-mode="maatsoort"] .ms-notes { display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.5; }
+.view[data-mode="maatsoort"] .ms-fb-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
+.view[data-mode="maatsoort"] .ms-fb-hint { font-size: 13px; margin-right: auto; }
+/* Telefoon: alles wat je per ronde nodig hebt (luisteren, antwoorden, Volgende) past zonder scrollen */
+@media (max-width: 640px) {
+  .view[data-mode="maatsoort"].ms-in-play .page-head { gap: 6px; margin-bottom: 14px; }
+  .view[data-mode="maatsoort"].ms-in-play .page-head .eyebrow { display: none; }
+  .view[data-mode="maatsoort"].ms-in-play .page-head h1 { font-size: 24px; }
+  .view[data-mode="maatsoort"] .ms-play { gap: 12px; }
+
+  /* Bovenbalk: ronde en niveau op één regel, de bolletjes eronder over de hele breedte */
+  .view[data-mode="maatsoort"] .ms-topbar { gap: 8px 12px; }
+  .view[data-mode="maatsoort"] .ms-pips { order: 3; flex-basis: 100%; gap: 4px; }
+  .view[data-mode="maatsoort"] .ms-pip { width: 13px; height: 13px; }
+  .view[data-mode="maatsoort"] .ms-pip svg { width: 8px; height: 8px; }
+
+  /* Luisteren: compact, bol links en tekst rechts */
+  .view[data-mode="maatsoort"] .ms-stage { padding: 16px; min-height: 0; }
+  .view[data-mode="maatsoort"] .ms-listen {
+    display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center;
+    gap: 14px 16px; padding: 0; text-align: left;
+  }
+  .view[data-mode="maatsoort"] .ms-orb { --ms-r0: 0.7; width: 80px; height: 80px; }
+  .view[data-mode="maatsoort"] .ms-core { width: 56px; height: 56px; }
+  .view[data-mode="maatsoort"] .ms-core svg { width: 24px; height: 24px; }
+  .view[data-mode="maatsoort"] .ms-status { gap: 4px; }
+  .view[data-mode="maatsoort"] .ms-status h2 { font-size: 19px; }
+  .view[data-mode="maatsoort"] .ms-progress { grid-column: 1 / -1; width: 100%; }
+  .view[data-mode="maatsoort"] .ms-listen-actions { grid-column: 1 / -1; justify-content: flex-start; }
+
+  .view[data-mode="maatsoort"] .ms-answers { gap: 10px; }
+  .view[data-mode="maatsoort"] .ms-answer { min-height: 80px; padding: 10px 8px; }
+  .view[data-mode="maatsoort"] .ms-frac { font-size: 27px; }
+
+  /* Uitleg: de antwoordknoppen doen dan niets meer en de uitslag staat al in de uitleg */
+  .view[data-mode="maatsoort"] .ms-play.is-feedback .ms-answers { display: none; }
+  .view[data-mode="maatsoort"] .ms-fb-hint { display: none; }
+  /* 'Nog eens horen' en 'Volgende' blijven boven de menubalk in beeld, ook bij een lange uitleg */
+  .view[data-mode="maatsoort"] .ms-fb-actions {
+    position: sticky; z-index: 5;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    flex-wrap: nowrap;
+    margin: 0 -16px -16px; padding: 12px 16px;
+    background: var(--surface); border-top: 1px solid var(--line);
+    border-radius: 0 0 var(--r-l) var(--r-l);
+    box-shadow: 0 -12px 24px -16px rgba(0, 0, 0, 0.7);
+  }
+  .view[data-mode="maatsoort"] .ms-fb-actions .btn { flex: 1 1 0; min-width: 0; padding: 0 10px; }
+  /* Sneltoetslabels passen hier niet naast elkaar; op een smal scherm tik je toch */
+  .view[data-mode="maatsoort"] .ms-fb-actions .kbd { display: none; }
+}
+
+/* ---------- Resultaat ---------- */
+.view[data-mode="maatsoort"] .ms-result { display: flex; flex-direction: column; gap: var(--gap); }
+.view[data-mode="maatsoort"] .ms-result-head { display: flex; flex-direction: column; gap: 22px; }
+.view[data-mode="maatsoort"] .ms-result-score { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.view[data-mode="maatsoort"] .ms-result-score .score-ring { flex: none; }
+.view[data-mode="maatsoort"] .ms-headline { font-size: 26px; font-weight: 700; letter-spacing: -0.03em; }
+.view[data-mode="maatsoort"] .ms-compare { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; color: var(--text-2); font-size: 14px; }
+.view[data-mode="maatsoort"] .ms-result-stats { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 860px) {
+  .view[data-mode="maatsoort"] .ms-result-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.view[data-mode="maatsoort"] .ms-result-stats .stat-tile { background: var(--bg-2); }
+.view[data-mode="maatsoort"] .ms-result-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.view[data-mode="maatsoort"] .ms-result-grid { align-items: start; }
+.view[data-mode="maatsoort"] .ms-sig-rows { display: flex; flex-direction: column; gap: 10px; }
+.view[data-mode="maatsoort"] .ms-sig-row {
+  display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; gap: 14px; min-height: 36px;
+}
+.view[data-mode="maatsoort"] .ms-sig-row.is-empty .ms-sig { color: var(--text-3); }
+.view[data-mode="maatsoort"] .ms-meter { height: 8px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
+.view[data-mode="maatsoort"] .ms-meter > span { display: block; height: 100%; border-radius: 4px; background: var(--mode); }
+.view[data-mode="maatsoort"] .ms-sig-score { font-size: 13px; color: var(--text-2); white-space: nowrap; min-width: 84px; text-align: right; }
+.view[data-mode="maatsoort"] .ms-sig-score .num { color: var(--text); font-weight: 600; }
+
+.view[data-mode="maatsoort"] .ms-confusions { display: flex; flex-direction: column; }
+.view[data-mode="maatsoort"] .ms-confusion { padding: 12px 0; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+.view[data-mode="maatsoort"] .ms-confusion:first-child { border-top: 0; padding-top: 0; }
+.view[data-mode="maatsoort"] .ms-confusion-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 14px; }
+.view[data-mode="maatsoort"] .ms-confusion-head .ms-count { margin-left: auto; }
+.view[data-mode="maatsoort"] .ms-confusion-why { color: var(--text-2); font-size: 13px; line-height: 1.5; }
+.view[data-mode="maatsoort"] .ms-none {
+  display: flex; align-items: center; gap: 10px; padding: 16px; border-radius: var(--r);
+  border: 1px dashed var(--line-2); color: var(--text-2); font-size: 14px;
+}
+.view[data-mode="maatsoort"] .ms-none svg { color: var(--ok); flex: none; }
+
+.view[data-mode="maatsoort"] .ms-round-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.view[data-mode="maatsoort"] .ms-round-item {
+  display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 12px;
+  border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); font-size: 13px;
+}
+.view[data-mode="maatsoort"] .ms-round-item.is-ok svg { color: var(--ok); }
+.view[data-mode="maatsoort"] .ms-round-item.is-bad svg { color: var(--bad); }
+.view[data-mode="maatsoort"] .ms-round-item b { font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Geen golven: alleen de rustige gloed en de voortgangsbalk blijven */
+  .view[data-mode="maatsoort"] .ms-ripple { display: none; }
+}

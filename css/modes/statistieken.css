@@ -1,0 +1,339 @@
+/* Statistieken — eigen stijl van deze pagina. Alles gescoped onder .view[data-mode="statistieken"],
+   alleen tokens uit base.css. Grafieken zijn eigen SVG; kleuren via klassen, zodat de tokens leidend blijven. */
+
+.view[data-mode="statistieken"] [hidden] { display: none !important; }
+
+.view[data-mode="statistieken"] .st { display: flex; flex-direction: column; gap: 24px; }
+.view[data-mode="statistieken"] .st > .page-head { margin-bottom: 4px; }
+.view[data-mode="statistieken"] .st-section { display: flex; flex-direction: column; gap: var(--gap); min-width: 0; }
+
+.view[data-mode="statistieken"] .st-h2 { font-size: 18px; font-weight: 650; letter-spacing: -0.02em; }
+.view[data-mode="statistieken"] .st-h2:focus { outline: none; }
+.view[data-mode="statistieken"] .st-sec-sub { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+.view[data-mode="statistieken"] .st-sec-head { display: flex; flex-direction: column; gap: 0; }
+
+/* ---------- Bovenaan: kerncijfers + activiteit ---------- */
+/* Gaat over álle oefeningen: neutrale kleur, zodat de kalender niet op 'Gehoor' (paars) lijkt */
+.view[data-mode="statistieken"] .st-top { --mode: var(--c-stats); display: flex; flex-direction: column; gap: var(--gap); }
+.view[data-mode="statistieken"] .st-kpi { position: relative; min-width: 0; display: flex; flex-direction: column; }
+.view[data-mode="statistieken"] .st-kpi .stat { padding-right: 22px; }
+.view[data-mode="statistieken"] .st-kpi-ico { position: absolute; top: 16px; right: 16px; color: var(--text-3); display: inline-flex; }
+.view[data-mode="statistieken"] .st-kpi-sub { margin-top: 8px; font-size: 12px; color: var(--text-3); }
+.view[data-mode="statistieken"] .st-kpi-sub.better { color: var(--ok); font-weight: 600; }
+.view[data-mode="statistieken"] .st-kpi-sub.worse { color: var(--bad); font-weight: 600; }
+.view[data-mode="statistieken"] .st-kpi-sub.same { color: var(--text-2); }
+.view[data-mode="statistieken"] .st-kpi-grid .stat-value { overflow-wrap: anywhere; }
+
+.view[data-mode="statistieken"] .st-activity { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+.view[data-mode="statistieken"] .st-act-body { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1000px) {
+  .view[data-mode="statistieken"] .st-act-body { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); align-items: start; }
+}
+.view[data-mode="statistieken"] .st-act-cal { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.view[data-mode="statistieken"] .st-act-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.view[data-mode="statistieken"] .st-act-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.view[data-mode="statistieken"] .st-act-facts .stat-value { font-size: 24px; }
+.view[data-mode="statistieken"] .st-side-title { font-size: 13px; font-weight: 600; color: var(--text-2); margin-top: 4px; }
+
+/* Activiteitskalender: 12 weken × 7 dagen */
+.view[data-mode="statistieken"] .st-cal {
+  display: grid; grid-template-columns: 22px repeat(12, minmax(0, 1fr));
+  gap: 4px; width: 100%; max-width: 440px;
+}
+.view[data-mode="statistieken"] .st-cal-month { font-size: 11px; color: var(--text-3); white-space: nowrap; line-height: 16px; height: 16px; overflow: visible; }
+.view[data-mode="statistieken"] .st-cal-day { font-size: 11px; color: var(--text-3); align-self: center; line-height: 1; }
+.view[data-mode="statistieken"] .st-cal-cell {
+  display: block; aspect-ratio: 1; border-radius: 4px; background: var(--surface-3);
+  transition: box-shadow var(--fast);
+}
+.view[data-mode="statistieken"] .st-cal-cell[data-l="1"] { background: color-mix(in srgb, var(--mode) 30%, var(--surface-3)); }
+.view[data-mode="statistieken"] .st-cal-cell[data-l="2"] { background: color-mix(in srgb, var(--mode) 52%, var(--surface-3)); }
+.view[data-mode="statistieken"] .st-cal-cell[data-l="3"] { background: color-mix(in srgb, var(--mode) 76%, var(--surface-3)); }
+.view[data-mode="statistieken"] .st-cal-cell[data-l="4"] { background: var(--mode); }
+.view[data-mode="statistieken"] .st-cal-cell.is-future { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+.view[data-mode="statistieken"] .st-cal-cell.is-today { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--text-2); }
+.view[data-mode="statistieken"] .st .st-cal > .st-cal-cell:not(.is-future):hover { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--text); }
+.view[data-mode="statistieken"] .st-cal-cell:focus { outline: none; }
+.view[data-mode="statistieken"] .st-cal-cell:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--mode); }
+.view[data-mode="statistieken"] .st-cal-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: var(--text-3); }
+.view[data-mode="statistieken"] .st-cal-lg { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.view[data-mode="statistieken"] .st-cal-lg .st-cal-cell { width: 12px; height: 12px; border-radius: 3px; }
+
+/* ---------- Keuze per oefening ---------- */
+/* Direct onder de kop en plakkend bij scrollen. Het ankertje ervoor (0 px hoog) meet of hij plakt;
+   de negatieve marge heft de extra tussenruimte van .st weer op. */
+.view[data-mode="statistieken"] .st-tabs-anchor { height: 0; margin-bottom: -24px; }
+.view[data-mode="statistieken"] .st-tabs-row {
+  display: flex; position: sticky; top: 0; z-index: 6;
+  margin: -8px 0; padding: 8px 0; background: var(--bg);
+  transition: box-shadow var(--fast);
+}
+.view[data-mode="statistieken"] .st-tabs-row.is-stuck { box-shadow: 0 1px 0 var(--line), 0 12px 24px -16px rgba(0, 0, 0, 0.9); }
+.view[data-mode="statistieken"] .st-tabs button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; }
+.view[data-mode="statistieken"] .st-tabs button svg { opacity: 0.85; }
+.view[data-mode="statistieken"] .st-tabs button[aria-pressed="true"] svg { color: var(--mode); opacity: 1; }
+@media (max-width: 640px) {
+  .view[data-mode="statistieken"] .st-tabs { display: flex; width: 100%; }
+  .view[data-mode="statistieken"] .st-tabs button { flex: 1 1 auto; justify-content: center; padding: 0 8px; font-size: 13px; }
+  .view[data-mode="statistieken"] .st-tabs button svg { display: none; }
+}
+
+/* ---------- Kop van een oefening ---------- */
+.view[data-mode="statistieken"] .st-exhead { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.view[data-mode="statistieken"] .st-extitle { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.view[data-mode="statistieken"] .st-excontrols { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.view[data-mode="statistieken"] .st-excontrols .seg button { min-height: 44px; }
+.view[data-mode="statistieken"] .st-icon-tile {
+  width: 44px; height: 44px; flex: none; border-radius: 12px; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--mode) 16%, transparent); color: var(--mode);
+}
+.view[data-mode="statistieken"] .st-kpis { display: flex; flex-direction: column; gap: 10px; }
+
+.view[data-mode="statistieken"] .st-delta { margin-top: 8px; font-size: 12px; font-weight: 600; }
+.view[data-mode="statistieken"] .st-delta.better { color: var(--ok); }
+.view[data-mode="statistieken"] .st-delta.worse { color: var(--bad); }
+.view[data-mode="statistieken"] .st-delta.same { color: var(--text-2); }
+.view[data-mode="statistieken"] .st-delta.none { color: var(--text-3); font-weight: 500; }
+
+/* Twee kaarten naast elkaar als er ruimte is, anders onder elkaar */
+.view[data-mode="statistieken"] .st-pair {
+  display: grid; gap: var(--gap);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+}
+
+/* ---------- Grafiekkaart ---------- */
+.view[data-mode="statistieken"] .st-fig { margin: 0; padding: 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.view[data-mode="statistieken"] .st-fig-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.view[data-mode="statistieken"] .st-fig-titles { min-width: 0; }
+.view[data-mode="statistieken"] .st-fig-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.view[data-mode="statistieken"] .st-fig-sub { font-size: 13px; color: var(--text-2); margin-top: 3px; }
+.view[data-mode="statistieken"] .st-fig-note { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+.view[data-mode="statistieken"] .st-fig-empty {
+  padding: 28px 16px; text-align: center; font-size: 14px; color: var(--text-3);
+  border: 1px dashed var(--line-2); border-radius: var(--r);
+}
+.view[data-mode="statistieken"] .st-tview { flex: none; min-height: 44px; color: var(--text-2); }
+.view[data-mode="statistieken"] .st-tview[aria-pressed="true"] {
+  color: var(--text); background: color-mix(in srgb, var(--mode) 14%, var(--surface-2));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mode) 50%, transparent);
+}
+.view[data-mode="statistieken"] .st-plot { position: relative; width: 100%; min-width: 0; }
+.view[data-mode="statistieken"] .st-plot.is-center { display: flex; justify-content: center; }
+.view[data-mode="statistieken"] .st-tview-wrap { max-height: 340px; overflow: auto; }
+@media (max-width: 640px) {
+  .view[data-mode="statistieken"] .st-fig, .view[data-mode="statistieken"] .st-activity { padding: 16px; }
+}
+
+/* Legenda */
+.view[data-mode="statistieken"] .st-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--text-2); }
+.view[data-mode="statistieken"] .st-leg { display: inline-flex; align-items: center; gap: 7px; }
+.view[data-mode="statistieken"] .st-key { display: inline-block; flex: none; }
+.view[data-mode="statistieken"] .st-key-line { width: 14px; height: 2px; border-radius: 1px; }
+.view[data-mode="statistieken"] .st-key-dot { width: 8px; height: 8px; border-radius: 50%; }
+.view[data-mode="statistieken"] .st-key-rect { width: 10px; height: 10px; border-radius: 3px; }
+.view[data-mode="statistieken"] .st-key-rect.na { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-2); }
+
+/* Schaal (toetsenbord) */
+.view[data-mode="statistieken"] .st-scale { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--text-2); }
+.view[data-mode="statistieken"] .st-scale-bar {
+  display: inline-block; width: 120px; height: 8px; border-radius: 4px;
+  /* Zelfde bereik als de toetsen (14% → 66%, zie heatMix in statistieken.js) */
+  background: linear-gradient(to right, color-mix(in srgb, var(--mode) 14%, var(--surface-3)), color-mix(in srgb, var(--mode) 66%, var(--surface-3)));
+}
+.view[data-mode="statistieken"] .st-scale-na { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; color: var(--text-3); }
+
+/* ---------- SVG-grafieken ---------- */
+.view[data-mode="statistieken"] .st-svg { display: block; overflow: visible; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+.view[data-mode="statistieken"] .st-svg:focus { outline: none; }
+.view[data-mode="statistieken"] .st-svg:focus-visible { outline: 2px solid var(--mode); outline-offset: 4px; border-radius: 6px; }
+.view[data-mode="statistieken"] .st-svg text { pointer-events: none; }
+.view[data-mode="statistieken"] .st-grid line { stroke: var(--line); stroke-width: 1; shape-rendering: crispEdges; }
+.view[data-mode="statistieken"] .st-tick { fill: var(--text-3); font-family: var(--mono); font-size: 11px; font-variant-numeric: tabular-nums; }
+.view[data-mode="statistieken"] .st-axisnote { fill: var(--text-3); font-family: var(--font); font-size: 11px; }
+.view[data-mode="statistieken"] .st-zero, .view[data-mode="statistieken"] .st-base { stroke: var(--text-3); stroke-width: 1; shape-rendering: crispEdges; opacity: 0.6; }
+.view[data-mode="statistieken"] .st-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.view[data-mode="statistieken"] .st-line.main { stroke: var(--mode); }
+.view[data-mode="statistieken"] .st-line.raw { stroke: var(--text-3); stroke-width: 1.5; opacity: 0.55; }
+.view[data-mode="statistieken"] .st-area { fill: var(--mode); opacity: 0.1; }
+.view[data-mode="statistieken"] .st-dot { stroke: var(--surface); stroke-width: 2; }
+.view[data-mode="statistieken"] .st-dot.main { fill: var(--mode); }
+.view[data-mode="statistieken"] .st-dot.raw { fill: var(--text-3); }
+.view[data-mode="statistieken"] .st-dot.hot { stroke-width: 2.5; }
+.view[data-mode="statistieken"] .st-dot.hot.raw { fill: var(--text); }
+.view[data-mode="statistieken"] .st-endlabel { fill: var(--text); font-family: var(--mono); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.view[data-mode="statistieken"] .st-vlabel { fill: var(--text-2); font-family: var(--mono); font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.view[data-mode="statistieken"] .st-band { fill: var(--ok); opacity: 0.08; }
+.view[data-mode="statistieken"] .st-band-label { fill: var(--text-3); font-family: var(--font); font-size: 11px; }
+.view[data-mode="statistieken"] .st-cross { stroke: var(--text-3); stroke-width: 1; shape-rendering: crispEdges; }
+.view[data-mode="statistieken"] .st-colhl { fill: var(--surface-3); opacity: 0.55; }
+
+.view[data-mode="statistieken"] .st-bar { transition: opacity var(--fast), filter var(--fast); }
+.view[data-mode="statistieken"] .st-bar.mode { fill: var(--mode); }
+.view[data-mode="statistieken"] .st-bar.early { fill: var(--early); }
+.view[data-mode="statistieken"] .st-bar.late { fill: var(--late); }
+.view[data-mode="statistieken"] .st-bar.neutral { fill: var(--text-3); }
+.view[data-mode="statistieken"] .st-svg.has-hot .st-bar { opacity: 0.5; }
+.view[data-mode="statistieken"] .st-svg.has-hot .st-bar.hot { opacity: 1; filter: brightness(1.15); }
+
+/* Sparkline in de overzichtskaart */
+.view[data-mode="statistieken"] .st-spark-line { fill: none; stroke: var(--text-3); stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.view[data-mode="statistieken"] .st-spark-end { fill: var(--mode); stroke: var(--surface); stroke-width: 2; }
+
+/* Toetsenbord-heatmap */
+.view[data-mode="statistieken"] .st-key.white { fill: var(--surface-3); stroke: none; }
+.view[data-mode="statistieken"] .st-key.white.nodata { fill: var(--surface-2); }
+.view[data-mode="statistieken"] .st-key.black { fill: var(--surface-3); stroke: var(--surface); stroke-width: 2; }
+.view[data-mode="statistieken"] .st-key.black.nodata { fill: var(--bg-2); }
+.view[data-mode="statistieken"] .st-key.hot { stroke: var(--text); stroke-width: 2; }
+.view[data-mode="statistieken"] .st-kb-name { fill: var(--text); font-family: var(--font); font-size: 13px; font-weight: 600; }
+.view[data-mode="statistieken"] .st-kb-pct { fill: var(--text); font-family: var(--mono); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+/* Tellingen in --text (niet --text-2): op de gekleurde toetsen haalt alleen --text genoeg contrast */
+.view[data-mode="statistieken"] .st-kb-cnt { fill: var(--text); font-family: var(--mono); font-size: 10.5px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.view[data-mode="statistieken"] .st-kb-name.sm { font-size: 11px; }
+.view[data-mode="statistieken"] .st-kb-pct.sm { font-size: 10px; }
+
+/* ---------- Tooltip ---------- */
+.view[data-mode="statistieken"] .st-tip {
+  position: fixed; z-index: 45; left: 0; top: 0; pointer-events: none;
+  min-width: 140px; max-width: min(280px, calc(100vw - 16px));
+  padding: 10px 12px; border-radius: 10px;
+  background: var(--surface-3); border: 1px solid var(--line-2); box-shadow: var(--shadow);
+  font-size: 13px; line-height: 1.4;
+}
+.view[data-mode="statistieken"] .st-tip-title { font-size: 12px; color: var(--text-2); margin-bottom: 6px; }
+.view[data-mode="statistieken"] .st-tip-row { display: flex; align-items: center; gap: 8px; min-height: 20px; }
+.view[data-mode="statistieken"] .st-tip-key { display: inline-block; width: 12px; height: 2px; border-radius: 1px; flex: none; }
+.view[data-mode="statistieken"] .st-tip-key.dot { width: 8px; height: 8px; border-radius: 50%; margin: 0 2px; }
+.view[data-mode="statistieken"] .st-tip-val { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text); white-space: nowrap; }
+.view[data-mode="statistieken"] .st-tip-lab { color: var(--text-2); }
+.view[data-mode="statistieken"] .st-tip-note { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); font-size: 12px; color: var(--text-2); }
+
+/* ---------- Balkjes met tekst ---------- */
+.view[data-mode="statistieken"] .st-meters { display: flex; flex-direction: column; gap: 12px; }
+.view[data-mode="statistieken"] .st-meter {
+  display: grid; grid-template-columns: minmax(92px, 26%) minmax(0, 1fr) auto; align-items: center; gap: 12px;
+  font-size: 14px;
+}
+.view[data-mode="statistieken"] .st-meter-label { display: inline-flex; align-items: center; gap: 8px; min-width: 0; color: var(--text); }
+.view[data-mode="statistieken"] .st-meter-label > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.view[data-mode="statistieken"] .st-meter-track {
+  display: block; height: 8px; border-radius: 4px; overflow: hidden;
+  background: color-mix(in srgb, var(--mode) 14%, var(--surface-3));
+}
+.view[data-mode="statistieken"] .st-meter-fill { display: block; height: 100%; border-radius: 0 4px 4px 0; background: var(--mode); }
+.view[data-mode="statistieken"] .st-meter-val { display: inline-flex; align-items: baseline; justify-content: flex-end; gap: 6px; min-width: 76px; }
+.view[data-mode="statistieken"] .st-meter-val b { font-size: 14px; font-weight: 600; }
+.view[data-mode="statistieken"] .st-meter-sub { font-size: 12px; color: var(--text-3); }
+
+/* ---------- Tabellen ---------- */
+.view[data-mode="statistieken"] .st-table-wrap { overflow-x: auto; min-width: 0; }
+.view[data-mode="statistieken"] .st-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.view[data-mode="statistieken"] .st-table th {
+  text-align: left; font-weight: 500; font-size: 12px; color: var(--text-3); white-space: nowrap;
+  padding: 0 10px 8px; border-bottom: 1px solid var(--line-2); position: sticky; top: 0; background: var(--surface);
+}
+.view[data-mode="statistieken"] .st-table td { padding: 9px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.view[data-mode="statistieken"] .st-table th:first-child, .view[data-mode="statistieken"] .st-table td:first-child { padding-left: 0; }
+.view[data-mode="statistieken"] .st-table th:last-child, .view[data-mode="statistieken"] .st-table td:last-child { padding-right: 0; }
+.view[data-mode="statistieken"] .st-table tbody tr:last-child td { border-bottom: 0; }
+.view[data-mode="statistieken"] .st-table .r { text-align: right; }
+.view[data-mode="statistieken"] .st-scorecell { display: inline-flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.view[data-mode="statistieken"] .st-minibar { display: inline-block; width: 44px; height: 6px; border-radius: 3px; overflow: hidden; background: color-mix(in srgb, var(--mode) 14%, var(--surface-3)); }
+.view[data-mode="statistieken"] .st-minibar > span { display: block; height: 100%; border-radius: 0 3px 3px 0; background: var(--mode); }
+.view[data-mode="statistieken"] .st-scorecell .num { min-width: 2.2em; text-align: right; }
+@media (max-width: 480px) {
+  .view[data-mode="statistieken"] .st-minibar { display: none; }
+  .view[data-mode="statistieken"] .st-table { font-size: 12.5px; }
+  .view[data-mode="statistieken"] .st-table th, .view[data-mode="statistieken"] .st-table td { padding-left: 6px; padding-right: 6px; }
+  .view[data-mode="statistieken"] .st-table th { white-space: normal; vertical-align: bottom; }
+}
+
+/* Verwisselingsmatrix */
+.view[data-mode="statistieken"] .st-matrix-wrap { overflow-x: auto; min-width: 0; }
+.view[data-mode="statistieken"] .st-matrix { border-collapse: separate; border-spacing: 3px; margin: 0 auto 0 -3px; }
+.view[data-mode="statistieken"] .st-matrix th { font-size: 12px; font-weight: 500; color: var(--text-2); padding: 2px 4px; text-align: center; white-space: nowrap; }
+.view[data-mode="statistieken"] .st-matrix tbody th { text-align: right; padding-right: 8px; }
+.view[data-mode="statistieken"] .st-matrix .st-mx-axis { color: var(--text-3); font-weight: 500; font-size: 11px; text-align: left; }
+.view[data-mode="statistieken"] .st-matrix .st-mx-cell {
+  width: 50px; min-width: 40px; height: 46px; border-radius: 6px; text-align: center; vertical-align: middle;
+  background: var(--surface-2); color: var(--text); line-height: 1.15; cursor: default;
+}
+.view[data-mode="statistieken"] .st-matrix .st-mx-cell b { display: block; font-size: 14px; font-weight: 600; }
+/* --text op de gekleurde vakjes (--text-2 haalt daar te weinig contrast) */
+.view[data-mode="statistieken"] .st-mx-pct { display: block; font-size: 11px; color: var(--text); }
+.view[data-mode="statistieken"] .st-matrix .st-mx-cell.zero { color: var(--text-3); }
+.view[data-mode="statistieken"] .st-matrix .st-mx-cell.diag { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 45%, transparent); }
+.view[data-mode="statistieken"] .st-matrix .st-mx-cell:hover { outline: 1.5px solid var(--text-2); outline-offset: 0; }
+@media (max-width: 480px) {
+  .view[data-mode="statistieken"] .st-matrix { border-spacing: 2px; }
+  .view[data-mode="statistieken"] .st-matrix th { font-size: 11px; padding: 2px; }
+  .view[data-mode="statistieken"] .st-matrix tbody th { padding-right: 4px; }
+  .view[data-mode="statistieken"] .st-matrix .st-mx-cell { width: 34px; min-width: 30px; height: 38px; }
+  .view[data-mode="statistieken"] .st-matrix .st-mx-cell b { font-size: 13px; }
+  .view[data-mode="statistieken"] .st-mx-pct { display: none; }
+}
+
+/* ---------- Overzichtskaarten ---------- */
+/* Hooguit twee kaarten naast elkaar; onder ~620 px één kolom */
+.view[data-mode="statistieken"] .st-cards {
+  display: grid; gap: var(--gap);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(300px, calc((100% - var(--gap)) / 2))), 1fr));
+}
+.view[data-mode="statistieken"] .st-card { padding: 20px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.view[data-mode="statistieken"] .st-card-head { display: flex; align-items: center; gap: 12px; }
+.view[data-mode="statistieken"] .st-card-head .st-icon-tile { width: 40px; height: 40px; }
+.view[data-mode="statistieken"] .st-card-titles { min-width: 0; }
+.view[data-mode="statistieken"] .st-card h3 { font-size: 17px; font-weight: 650; }
+.view[data-mode="statistieken"] .st-card-meta { font-size: 13px; color: var(--text-2); }
+.view[data-mode="statistieken"] .st-card-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.view[data-mode="statistieken"] .st-card-stats .stat-value { font-size: 24px; }
+.view[data-mode="statistieken"] .st-card-stats .stat-label { font-size: 12px; }
+.view[data-mode="statistieken"] .st-card-spark { display: flex; flex-direction: column; gap: 4px; }
+.view[data-mode="statistieken"] .st-card-spark-label { font-size: 12px; color: var(--text-3); }
+.view[data-mode="statistieken"] .st-spark-host { width: 100%; height: 44px; }
+.view[data-mode="statistieken"] .st-card-key { font-size: 13px; color: var(--text-2); }
+.view[data-mode="statistieken"] .st-card-empty { font-size: 14px; color: var(--text-2); }
+.view[data-mode="statistieken"] .st-card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+.view[data-mode="statistieken"] .st-card-actions .btn-sm { min-height: 44px; }
+.view[data-mode="statistieken"] .st-card.is-empty { border-style: dashed; border-color: var(--line-2); box-shadow: none; }
+
+/* ---------- Lege staten ---------- */
+.view[data-mode="statistieken"] .st-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.view[data-mode="statistieken"] .st-empty p { max-width: 46ch; }
+.view[data-mode="statistieken"] .st-empty-icon {
+  width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; margin-bottom: 6px;
+  background: color-mix(in srgb, var(--mode) 14%, transparent); color: var(--mode);
+}
+.view[data-mode="statistieken"] .st-empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 12px; }
+.view[data-mode="statistieken"] .st-go svg { color: var(--mode); }
+
+/* ---------- Geschiedenis ---------- */
+.view[data-mode="statistieken"] .st-hist-panel { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.view[data-mode="statistieken"] .st-hist { list-style: none; margin: 0; padding: 0; }
+.view[data-mode="statistieken"] .st-hrow {
+  display: grid; grid-template-columns: 10px minmax(0, 1fr) auto 52px 44px;
+  align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--line);
+}
+.view[data-mode="statistieken"] .st-hrow:last-child { border-bottom: 0; }
+.view[data-mode="statistieken"] .st-hdot { width: 10px; height: 10px; border-radius: 50%; background: var(--mode); }
+.view[data-mode="statistieken"] .st-hmain { min-width: 0; }
+.view[data-mode="statistieken"] .st-hname { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; font-weight: 600; }
+.view[data-mode="statistieken"] .st-hmode { flex: none; }
+.view[data-mode="statistieken"] .st-hdetail { color: var(--text-2); font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.view[data-mode="statistieken"] .st-demo { height: 20px; font-size: 11px; flex: none; }
+.view[data-mode="statistieken"] .st-hdate { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+.view[data-mode="statistieken"] .st-hkey { font-size: 13px; color: var(--text-2); text-align: right; white-space: nowrap; }
+.view[data-mode="statistieken"] .st-hscore { font-family: var(--mono); font-size: 18px; font-weight: 600; text-align: right; }
+.view[data-mode="statistieken"] .st-hdel { color: var(--text-3); }
+.view[data-mode="statistieken"] .st-hdel:hover { color: var(--bad); }
+.view[data-mode="statistieken"] .st-more-row { display: flex; justify-content: center; padding-top: 6px; }
+.view[data-mode="statistieken"] .st-more { min-height: 44px; }
+@media (max-width: 560px) {
+  .view[data-mode="statistieken"] .st-hrow { grid-template-columns: 10px minmax(0, 1fr) 44px 44px; row-gap: 2px; column-gap: 12px; }
+  .view[data-mode="statistieken"] .st-hdot { grid-row: 1 / span 2; align-self: start; margin-top: 6px; }
+  .view[data-mode="statistieken"] .st-hmain { grid-column: 2; grid-row: 1; }
+  .view[data-mode="statistieken"] .st-hkey { grid-column: 2; grid-row: 2; text-align: left; font-size: 12px; }
+  .view[data-mode="statistieken"] .st-hscore { grid-column: 3; grid-row: 1 / span 2; }
+  .view[data-mode="statistieken"] .st-hdel, .view[data-mode="statistieken"] .st-hdel-none { grid-column: 4; grid-row: 1 / span 2; }
+  .view[data-mode="statistieken"] .st-hdetail { display: none; }
+}

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#09090c">
+  <title>Maatwerk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/modes/ritme.css">
+  <link rel="stylesheet" href="css/modes/gehoor.css">
+  <link rel="stylesheet" href="css/modes/bpm.css">
+  <link rel="stylesheet" href="css/modes/maatsoort.css">
+  <link rel="stylesheet" href="css/modes/statistieken.css">
+  <link rel="stylesheet" href="css/modes/instellingen.css">
+</head>
+<body>
+  <div id="app"></div>
+  <noscript>Maatwerk heeft JavaScript nodig.</noscript>
+
+  <!-- Basis (niet aanpassen vanuit een oefening) -->
+  <script src="js/core/ui.js"></script>
+  <script src="js/core/store.js"></script>
+  <script src="js/core/audio.js"></script>
+  <!-- Schil: menu en routes; start pas als de hele pagina geladen is -->
+  <script src="js/core/app.js"></script>
+  <!-- Oefeningen en pagina's: elk meldt zich aan met App.registerMode -->
+  <script src="js/modes/ritme.js"></script>
+  <script src="js/modes/gehoor.js"></script>
+  <script src="js/modes/bpm.js"></script>
+  <script src="js/modes/maatsoort.js"></script>
+  <script src="js/modes/statistieken.js"></script>
+  <script src="js/modes/instellingen.js"></script>
+</body>
+</html>
