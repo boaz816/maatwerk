@@ -222,3 +222,8 @@ Verduidelijkingen per record:
   bereik de vaste referentie zelf is.
 - **maatsoort:** extra in `stats`: `perSignature` (`{"6/8": {total, correct}}`), `confusions`
   (`{"6/8": {"3/4": 2}}`), `meanTimeMs`, `replays`; per ronde ook `grouping` en `startBeat`.
+- **bpm:** extra velden: `settings.tapHelp` (boolean), `rounds[].tapBpm` (getal of `null`, alleen met tik-hulp),
+  `stats.replays` (totaal) en `stats.meanTimeMs`. De sessie wordt bewaard zodra de laatste schatting is gegeven.
+- **gehoor:** `settings.referenceMidi` is bij "willekeurig" altijd `null`, ook bij referentie "eenmalig".
+- Testhulp: records van `App.dev.seedStats(n)` hebben `demo: true`; `App.dev.clearSeed()` verwijdert alleen die.
+- `App.store.addSession` geeft `null` terug als opslaan mislukte (de sessie is dan niet bewaard).

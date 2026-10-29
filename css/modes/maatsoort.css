@@ -8,10 +8,11 @@
   background: var(--surface-3); border: 1px solid var(--line-2);
 }
 .view[data-mode="maatsoort"] .ms-dot { color: var(--text-3); margin: 0 8px; }
-.view[data-mode="maatsoort"] .btn .kbd { margin-left: 2px; height: 22px; min-width: 22px; font-size: 11px; }
+/* Sneltoetslabels in knoppen: in elke oefening dezelfde maat. Op een gekleurde knop in de knoptekstkleur. */
+.view[data-mode="maatsoort"] .btn .kbd { height: 20px; min-width: 20px; padding: 0 5px; margin-left: 2px; font-size: 11px; }
 .view[data-mode="maatsoort"] .btn-primary .kbd {
   background: color-mix(in srgb, var(--ink) 14%, transparent);
-  border-color: color-mix(in srgb, var(--ink) 25%, transparent);
+  border-color: color-mix(in srgb, var(--ink) 28%, transparent);
   color: var(--ink);
 }
 @media (hover: none) and (pointer: coarse) {
@@ -106,7 +107,8 @@
 
 /* ---------- Spelen ---------- */
 /* Tijdens het spelen is de inleiding boven de pagina overbodig; zo staan stage en knoppen hoger */
-.view[data-mode="maatsoort"].ms-in-play .page-head .lead { display: none; }
+.view[data-mode="maatsoort"].ms-in-play .page-head .lead,
+.view[data-mode="maatsoort"].ms-in-result .page-head .lead { display: none; }
 .view[data-mode="maatsoort"] .ms-play { display: flex; flex-direction: column; gap: var(--gap); }
 .view[data-mode="maatsoort"] .ms-topbar { display: flex; align-items: center; gap: 12px 18px; flex-wrap: wrap; }
 .view[data-mode="maatsoort"] .ms-round-label { font-weight: 600; font-size: 15px; white-space: nowrap; }
@@ -307,10 +309,10 @@
   /* Uitleg: de antwoordknoppen doen dan niets meer en de uitslag staat al in de uitleg */
   .view[data-mode="maatsoort"] .ms-play.is-feedback .ms-answers { display: none; }
   .view[data-mode="maatsoort"] .ms-fb-hint { display: none; }
-  /* 'Nog eens horen' en 'Volgende' blijven boven de menubalk in beeld, ook bij een lange uitleg */
+  /* 'Opnieuw horen' en 'Volgende' blijven onderin in beeld (boven de menubalk als die er is), ook bij een lange uitleg */
   .view[data-mode="maatsoort"] .ms-fb-actions {
     position: sticky; z-index: 5;
-    bottom: calc(72px + env(safe-area-inset-bottom));
+    bottom: calc(var(--bottom-nav-h) + 8px);
     flex-wrap: nowrap;
     margin: 0 -16px -16px; padding: 12px 16px;
     background: var(--surface); border-top: 1px solid var(--line);
@@ -327,7 +329,7 @@
 .view[data-mode="maatsoort"] .ms-result-head { display: flex; flex-direction: column; gap: 22px; }
 .view[data-mode="maatsoort"] .ms-result-score { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
 .view[data-mode="maatsoort"] .ms-result-score .score-ring { flex: none; }
-.view[data-mode="maatsoort"] .ms-headline { font-size: 26px; font-weight: 700; letter-spacing: -0.03em; }
+.view[data-mode="maatsoort"] .ms-headline { font-size: clamp(24px, 3vw, 30px); font-weight: 700; letter-spacing: -0.03em; }
 .view[data-mode="maatsoort"] .ms-compare { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; color: var(--text-2); font-size: 14px; }
 .view[data-mode="maatsoort"] .ms-result-stats { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 @media (max-width: 860px) {
@@ -335,6 +337,10 @@
 }
 .view[data-mode="maatsoort"] .ms-result-stats .stat-tile { background: var(--bg-2); }
 .view[data-mode="maatsoort"] .ms-result-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+/* Telefoon: de knoppen onder elkaar over de hele breedte, net als bij de andere oefeningen */
+@media (max-width: 640px) {
+  .view[data-mode="maatsoort"] .ms-result-actions .btn { flex: 1 1 100%; }
+}
 
 .view[data-mode="maatsoort"] .ms-result-grid { align-items: start; }
 .view[data-mode="maatsoort"] .ms-sig-rows { display: flex; flex-direction: column; gap: 10px; }

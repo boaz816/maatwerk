@@ -450,19 +450,8 @@
     return /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
   }
 
-  /* Op iOS volgt Web Audio de stille-modusschakelaar. Met type 'playback' (Safari 17+) hoor je het
-     ritme toch. Hoort eigenlijk in de basis (audio.js); tot die tijd zetten we het hier. */
-  function preferPlayback() {
-    try {
-      if (navigator.audioSession && navigator.audioSession.type !== "playback") navigator.audioSession.type = "playback";
-    } catch (e) { /* niet ondersteund */ }
-  }
-
-  /* Laat de schil weten dat er gespeeld wordt (bijv. om de onderbalk op de telefoon te verbergen,
-     zodat je die niet per ongeluk raakt). Werkt pas zodra de basis App.setPlaying aanbiedt. */
-  function setPlayingFlag(on) {
-    try { if (typeof App.setPlaying === "function") App.setPlaying(!!on); } catch (e) { /* niet beschikbaar */ }
-  }
+  /* iPhone-geluid (audioSession 'playback') regelt de basis nu zelf in App.audio.ensure().
+     De speelstand (onderbalk weg op de telefoon) zet App.setPlaying. */
 
   /* Mini-notatie: per tel een groepje blokjes; gekleurd = noot. */
   function miniNotation(steps, spb) {
@@ -515,7 +504,6 @@
       document.addEventListener("keydown", onKeyDown);
       document.addEventListener("keyup", onKeyUp);
       document.addEventListener("visibilitychange", onVisibility);
-      preferPlayback();
 
       showSetup();
 
@@ -549,7 +537,7 @@
          toetsenbord meteen verder kunt. */
       function showSetup(focusStart) {
         screen = "setup";
-        setPlayingFlag(false);
+        App.setPlaying(false);
         dropChart();
         leaveResult();
         head.hidden = false;
@@ -882,7 +870,6 @@
         if (preview) { stopPreview(); return; }
         const pat = Logic.resolvePattern(S);
         if (!Logic.countNotes(pat.steps)) return;
-        preferPlayback();
         try { await App.audio.ready(); } catch (e) { /* geen geluid mogelijk */ }
         if (disposed || screen !== "setup" || preview) return;
         const beatMs = 60000 / S.bpm;
@@ -950,7 +937,6 @@
         stopPreview();
         flushSave();
         leaveResult();
-        preferPlayback();
         try { await App.audio.ready(); } catch (e) { /* geen geluid mogelijk */ }
         starting = false;
         if (disposed || run) return;
@@ -1008,8 +994,8 @@
         U.phase = h("div", { class: "rt-phase", dataset: { phase: "listen" } }, h("span", { class: "rt-phase-dot" }), U.phaseText);
         U.sub = h("div", { class: "rt-phase-sub" }, "Het ritme begint zo…");
         U.counter = h("div", { class: "rt-counter num" }, `Intro 1/${p.introBars}`);
-        const stopBtn = h("button", { type: "button", class: "btn rt-stop", "aria-keyshortcuts": "Escape", onClick: () => abortRun() },
-          icon("stop", 14), "Stop", kbd("Esc"));
+        const stopBtn = h("button", { type: "button", class: "btn btn-ghost rt-stop", "aria-keyshortcuts": "Escape", onClick: () => abortRun() },
+          icon("stop", 14), "Stoppen", kbd("Esc"));
         const top = h("div", { class: "rt-stage-top" },
           h("div", { class: "rt-phase-wrap" }, U.phase, U.sub),
           h("div", { class: "rt-stage-tools" }, U.counter, stopBtn)
@@ -1116,7 +1102,7 @@
         swapScreen(U.stage);
         renderLane(r, 0);
         updateOverview(r, 0);
-        setPlayingFlag(true);
+        App.setPlaying(true);
         window.scrollTo(0, 0);
         focusQuiet(U.pad);
       }
@@ -1512,7 +1498,7 @@
 
       function showResult({ record, prev, best }) {
         screen = "result";
-        setPlayingFlag(false);
+        App.setPlaying(false);
         dropChart();
         head.hidden = true;
         const s = record.settings, st = record.stats, score = record.score;
@@ -1536,7 +1522,7 @@
         const again = h("button", { type: "button", class: "btn btn-lg btn-primary rt-again", "aria-keyshortcuts": "R", onClick: () => startRun() },
           icon("replay", 18), "Nog een keer", kbd("R"));
         const other = h("button", { type: "button", class: "btn btn-lg", onClick: () => showSetup(true) }, icon("instellingen", 18), "Andere instellingen");
-        const toStats = h("button", { type: "button", class: "btn btn-lg btn-ghost", onClick: () => App.navigate("statistieken") }, icon("statistieken", 18), "Naar statistieken");
+        const toStats = h("button", { type: "button", class: "btn btn-lg btn-ghost", onClick: () => App.navigate("statistieken/" + MODE) }, icon("statistieken", 18), "Naar statistieken");
         // Het resultaat verschijnt vaak terwijl je nog doortikt. Daarom zijn de knoppen heel even
         // niet klikbaar, zodat één tik te veel niet meteen een nieuwe ronde start.
         const actionsRow = h("div", { class: "rt-res-actions is-arming" }, again, other, toStats);
@@ -1898,7 +1884,7 @@
         clearTimeout(undoTimer);
         undoTimer = null;
         leaveResult();
-        setPlayingFlag(false);
+        App.setPlaying(false);
         document.removeEventListener("keydown", onKeyDown);
         document.removeEventListener("keyup", onKeyUp);
         document.removeEventListener("visibilitychange", onVisibility);

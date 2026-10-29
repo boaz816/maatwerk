@@ -45,13 +45,15 @@
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
   }
 
-  /* Bewaar een afgeronde sessie. Vult id, ts en version aan als die ontbreken. */
+  /* Bewaar een afgeronde sessie. Vult id, ts en version aan als die ontbreken.
+     Geeft het record terug, of null als opslaan mislukte. */
   function addSession(rec) {
     load();
     const full = Object.assign({ id: uid(), ts: Date.now(), version: 1 }, rec);
     if (!full.mode) throw new Error("addSession: 'mode' ontbreekt");
     data.sessions.push(full);
-    save();
+    // Lukt opslaan niet, dan ook niet in het geheugen laten staan (anders lijkt hij bewaard)
+    if (!save()) { data.sessions.pop(); return null; }
     return full;
   }
 
@@ -117,6 +119,8 @@
     if (!inc || !Array.isArray(inc.sessions) || (inc.app && inc.app !== "maatwerk")) throw new Error("Dit is geen Maatwerk-bestand.");
     const known = new Set(data.sessions.map((s) => s.id));
     let added = 0;
+    const backup = data.sessions.slice();
+    const backupSettings = data.settings;
     for (const s of inc.sessions) {
       if (!validSession(s)) continue;
       if (!s.id) s.id = uid();
@@ -126,7 +130,11 @@
       added++;
     }
     if (replaceSettings && inc.settings) data.settings = Object.assign({}, data.settings, inc.settings);
-    if (!save()) throw new Error("Opslaan lukte niet: de opslag van de browser is vol.");
+    if (!save()) {
+      data.sessions = backup;
+      data.settings = backupSettings;
+      throw new Error("Opslaan lukte niet: de opslag van de browser is vol.");
+    }
     return added;
   }
 

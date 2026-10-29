@@ -664,7 +664,7 @@
       const kbd = (text) => h("span", { class: "kbd" }, text);
       const sigTag = (key) => h("span", { class: "ms-sig num" }, key);
       const capital = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-      const fmtSec = (ms) => (ms / 1000).toFixed(1).replace(".", ",");
+      const fmtSec = (ms) => ui.fmtNum(ms / 1000, 1, false); // 4,2 (met Nederlandse komma)
 
       /* Leesbare telling in het maatraster. Een raster schaalt mee met zijn vak; deze waarnemer zet per raster
          --ms-k (tekenbreedte / schermbreedte), zodat de CSS de letters bij verkleinen groter tekent. */
@@ -726,6 +726,12 @@
           if (k === "Enter" && !onControl) { e.preventDefault(); startSession(); }
           return;
         }
+        // Esc = stoppen (met de vraag of je het zeker weet, als je al iets beantwoord hebt)
+        if (k === "Escape" && (phase === "listen" || phase === "feedback")) {
+          e.preventDefault();
+          stopSession();
+          return;
+        }
         if (phase === "listen") {
           if (/^[1-9]$/.test(k)) {
             const key = session.settings.signatures[+k - 1];
@@ -750,7 +756,8 @@
         session = null;
         stopPlayer();
         els = {};
-        root.classList.remove("ms-in-play");
+        root.classList.remove("ms-in-play", "ms-in-result");
+        App.setPlaying(false);
 
         const sigChips = ui.chips({
           options: ORDER.map((k) => ({ value: k, label: k })),
@@ -895,6 +902,9 @@
         const s = session.settings;
         els = {};
         root.classList.add("ms-in-play"); // verbergt de inleiding boven de pagina, zodat de knoppen hoger staan
+        root.classList.remove("ms-in-result");
+        // Speelstand: op de telefoon verdwijnt de onderbalk, zodat je hem niet per ongeluk raakt
+        App.setPlaying(true);
         els.live = h("p", { class: "visually-hidden", "aria-live": "polite" });
         els.roundLabel = h("div", { class: "ms-round-label" });
         els.pips = h("div", { class: "ms-pips", role: "img" });
@@ -933,7 +943,8 @@
             kbd("1"), "–", kbd(String(n)), " antwoord", h("span", { class: "ms-dot" }, "·"),
             kbd("R"), " opnieuw horen", h("span", { class: "ms-dot" }, "·"),
             kbd("Enter"), " volgende"),
-          h("button", { type: "button", class: "btn btn-ghost", onClick: stopSession }, icon("stop", 14), "Stoppen")
+          h("button", { type: "button", class: "btn btn-ghost", "aria-keyshortcuts": "Escape", onClick: stopSession },
+            icon("stop", 14), "Stoppen", h("span", { class: "kbd ms-hide-touch", "aria-hidden": "true" }, "Esc"))
         );
         els.play = h("div", { class: "ms-play" },
           h("div", { class: "ms-topbar" },
@@ -1172,9 +1183,9 @@
 
         const last = session.index + 1 >= session.settings.rounds;
         const replayBtn = h("button", { type: "button", class: "btn", "aria-keyshortcuts": "R", onClick: () => replayFeedback() },
-          icon("replay", 16), "Nog eens horen", h("span", { class: "kbd ms-hide-touch", "aria-hidden": "true" }, "R"));
+          icon("replay", 16), "Opnieuw horen", h("span", { class: "kbd ms-hide-touch", "aria-hidden": "true" }, "R"));
         els.nextBtn = h("button", { type: "button", class: "btn btn-primary", "aria-keyshortcuts": "Enter", "aria-describedby": "ms-verdict", onClick: () => next() },
-          last ? "Bekijk uitslag" : "Volgende", icon("next", 16), h("span", { class: "kbd ms-hide-touch", "aria-hidden": "true" }, "Enter"));
+          last ? "Bekijk resultaat" : "Volgende", icon("next", 16), h("span", { class: "kbd ms-hide-touch", "aria-hidden": "true" }, "Enter"));
 
         els.stageInner.replaceChildren(
           h("div", { class: "ms-feedback" },
@@ -1215,7 +1226,7 @@
         if (session.rounds.length) {
           const sure = await ui.confirm({
             title: "Sessie stoppen?",
-            text: "Je antwoorden van deze sessie worden niet bewaard.",
+            text: `Je hebt ${session.rounds.length} van de ${session.settings.rounds} rondes gedaan. Een sessie die je stopt, wordt niet bewaard.`,
             ok: "Stoppen",
             cancel: "Doorgaan",
             danger: true,
@@ -1252,6 +1263,8 @@
       function renderResult(rec, prevScore) {
         els = {};
         root.classList.remove("ms-in-play");
+        root.classList.add("ms-in-result"); // inleiding boven de pagina weg, net als bij de andere oefeningen
+        App.setPlaying(false);
         const st = rec.stats;
         const lvl = levelLabel(rec.settings.difficulty);
         const headline = rec.score >= 90 ? "Uitstekend gehoord." : rec.score >= 70 ? "Goed bezig." : rec.score >= 50 ? "Je bent op weg." : "Blijf luisteren, het komt.";
@@ -1262,14 +1275,15 @@
           const d = rec.score - prevScore;
           compare = h("p", { class: "ms-compare" },
             "Vorige keer met deze instellingen: ", h("span", { class: "num" }, String(prevScore)), " ",
-            h("span", { class: "badge " + (d > 0 ? "ok" : d < 0 ? "bad" : "") }, d === 0 ? "gelijk" : `${ui.fmtSigned(d)} punten`));
+            // Zelfde afspraak als bij de andere oefeningen: groen bij vooruitgang, anders neutraal (met teken)
+            h("span", { class: "badge" + (d > 0 ? " ok" : "") }, d === 0 ? "gelijk" : `${ui.fmtSigned(d)} ${Math.abs(d) === 1 ? "punt" : "punten"}`));
         }
 
         const again = h("button", { type: "button", class: "btn btn-primary btn-lg", onClick: () => startSession() }, icon("replay", 18), "Nog een keer");
         const actions = h("div", { class: "ms-result-actions" },
           again,
           h("button", { type: "button", class: "btn btn-lg", onClick: () => renderSetup({ fromPlay: true }) }, icon("instellingen", 18), "Andere instellingen"),
-          h("button", { type: "button", class: "btn btn-lg btn-ghost", onClick: () => App.navigate("statistieken") }, icon("statistieken", 18), "Naar statistieken")
+          h("button", { type: "button", class: "btn btn-lg btn-ghost", onClick: () => App.navigate("statistieken/" + MODE) }, icon("statistieken", 18), "Naar statistieken")
         );
 
         const summary = h("section", { class: "panel ms-result-head" },
@@ -1347,8 +1361,8 @@
       /* ---------- Opbouw ---------- */
       root.append(
         ui.pageHead({
-          eyebrow: "Oefenen",
-          title: "Maatsoort",
+          eyebrow: "Maatsoort",
+          title: "Welke maatsoort hoor je?",
           lead: "Je hoort een paar maten ritme. Is het 3/4, 4/4, 6/8 of iets anders? Luister waar de nadruk valt en of de tellen in tweeën of in drieën gaan.",
         }),
         h("div", { class: "ms-body" })
@@ -1366,6 +1380,7 @@
         stopPlayer();
         if (sizer) sizer.disconnect();
         sized.clear();
+        App.setPlaying(false);
       };
     },
   });

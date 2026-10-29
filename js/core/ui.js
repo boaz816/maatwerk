@@ -280,13 +280,15 @@
         back.remove();
         document.removeEventListener("keydown", onKey, true);
         window.removeEventListener("hashchange", onRoute);
-        if (opener && opener.isConnected && typeof opener.focus === "function") opener.focus();
+        if (opener && opener.isConnected && typeof opener.focus === "function") opener.focus({ preventScroll: true });
         resolve(v);
       };
       const onRoute = () => done(false);
       const onKey = (e) => {
-        if (e.key === "Escape") { e.preventDefault(); done(false); return; }
+        // Escape en Tab horen bij het venster: niet doorgeven aan sneltoetsen van de pagina
+        if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); done(false); return; }
         if (e.key === "Tab") {
+          e.stopPropagation();
           // Focus binnen het venster houden
           const items = [cancelBtn, okBtn];
           const i = items.indexOf(document.activeElement);

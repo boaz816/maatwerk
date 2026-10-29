@@ -448,6 +448,7 @@
       frames.clear();
       document.removeEventListener("keydown", onKeydown);
       document.removeEventListener("keyup", onKeyup);
+      App.setPlaying(false);
     };
 
     /* ---------- Algemene hulpjes ---------- */
@@ -473,6 +474,8 @@
     function setState(next) {
       state = next;
       wrap.dataset.state = next;
+      // Speelstand: op de telefoon verdwijnt de onderbalk, zodat je hem niet per ongeluk raakt
+      App.setPlaying(next === "play");
       body.replaceChildren();
       Object.keys(ui).forEach((k) => delete ui[k]);
     }
@@ -767,7 +770,8 @@
         h("div", { class: "bp-stage-top" },
           ui.round,
           ui.runScore,
-          h("button", { type: "button", class: "btn btn-ghost bp-quit", onClick: askStop }, icon("x", 16), "Stoppen"),
+          h("button", { type: "button", class: "btn btn-ghost bp-quit", "aria-keyshortcuts": "Escape", onClick: askStop },
+            icon("stop", 14), "Stoppen", kbd("Esc")),
           h("div", { class: "bp-progress", "aria-hidden": "true" }, ui.segs)),
         ui.face,
         ui.live
@@ -993,11 +997,11 @@
         return;
       }
       playHandle = handle;
-      setPlaying(true);
+      showSoundState(true);
       handle.done.then(() => {
         if (!alive || playHandle !== handle) return;
         playHandle = null;
-        setPlaying(false);
+        showSoundState(false);
       });
     }
 
@@ -1019,7 +1023,8 @@
       ui.pulse.classList.remove("is-hit", "is-accent");
     }
 
-    function setPlaying(on) {
+    /* Beeld van het speelscherm: klinkt de ronde nu of is hij klaar? (Niet te verwarren met App.setPlaying.) */
+    function showSoundState(on) {
       if (!ui.stage || !ui.status) return;
       ui.stage.classList.toggle("is-playing", on);
       if (on) {
@@ -1144,7 +1149,7 @@
 
       ui.nextBtn = h("button", {
         type: "button", class: "btn btn-primary bp-next", "aria-keyshortcuts": "Enter", onClick: () => next(),
-      }, isLast ? "Bekijk resultaat" : "Volgende ronde", icon("next", 18), kbd("Enter"));
+      }, isLast ? "Bekijk resultaat" : "Volgende", icon("next", 18), kbd("Enter"));
 
       const big = (label, value, unit, cls) => h("div", { class: "bp-big " + cls },
         h("span", { class: "bp-big-label" }, label),
@@ -1229,7 +1234,7 @@
       noFocusSteal(b);
       b.addEventListener("click", (e) => {
         playCompare(bpm, b);
-        // Vangnet: na een klik blijft Enter 'Volgende ronde' betekenen
+        // Vangnet: na een klik blijft Enter 'Volgende' betekenen
         if (e.detail > 0 && ui.nextBtn && document.activeElement === b) ui.nextBtn.focus({ preventScroll: true });
       });
       return b;
@@ -1292,8 +1297,16 @@
     /* ---------- Sneltoetsen (alleen tijdens het spelen) ---------- */
     function onKeydown(e) {
       if (!alive || modalOpen || state !== "play" || !session) return;
+      // Al afgehandeld, bijv. Esc die net het stopvenster sloot: anders opent dat venster meteen opnieuw
+      if (e.defaultPrevented) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const key = e.key;
+      // Esc = stoppen (met de vraag of je het zeker weet), ook als de focus in het invoerveld staat
+      if (key === "Escape") {
+        e.preventDefault();
+        if (!e.repeat) askStop();
+        return;
+      }
       if (key === "Enter" && e.repeat) { e.preventDefault(); return; }   // Enter vasthouden klikt niet door
       if (isTypingTarget(e.target)) return;   // in een invoerveld: dat veld regelt zijn eigen toetsen
       const asking = session.phase === "ask";
@@ -1416,7 +1429,7 @@
         h("button", { type: "button", class: "btn btn-primary btn-lg", onClick: start }, icon("replay", 18), "Nog een keer"),
         h("button", { type: "button", class: "btn btn-lg", onClick: () => { showSetup(true); window.scrollTo(0, 0); } },
           icon("instellingen", 18), "Andere instellingen"),
-        h("button", { type: "button", class: "btn btn-lg btn-ghost", onClick: () => App.navigate("statistieken") },
+        h("button", { type: "button", class: "btn btn-lg btn-ghost", onClick: () => App.navigate("statistieken/" + MODE) },
           icon("statistieken", 18), "Naar statistieken")
       );
 

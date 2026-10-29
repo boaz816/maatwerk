@@ -537,6 +537,8 @@
         r.startTime = handle.startTime;
         run = r;
         phase = "run";
+        // Speelstand: op de telefoon verdwijnt de onderbalk, zodat je hem niet per ongeluk raakt
+        App.setPlaying(true);
         pad.focus({ preventScroll: true });
         scrollIntoViewSoft(pad);
         loop();
@@ -622,6 +624,7 @@
         cancelAnimationFrame(rafId);
         rafId = 0;
         r.handle.stop();
+        App.setPlaying(false);
         const btn = renderIdle();
         if (byUser) {
           App.ui.toast("Kalibratie gestopt. Er is niets veranderd.");
@@ -635,6 +638,7 @@
         for (let k = r.finalized; k < MEASURE; k++) if (r.taps[k] == null && !r.far[k]) paintCell(r.tl.cells[k], null);
         r.finalized = MEASURE;
         run = null;
+        App.setPlaying(false);
         renderResult(r, analyzeTaps(r.taps, { far: r.farOffsets }));
       }
 
@@ -994,17 +998,12 @@
             "aria-label": "Wis de sessies van " + title, title: "Wis " + title,
             dataset: { wipe: String(id) },
             disabled: info.n === 0,
-            onClick: (e) => wipeMode(id, title, e.currentTarget),
+            onClick: () => wipeMode(id, title),
           }, icon("trash", 18))
         );
       }
 
-      /* Focus terug op de knop die het venster opende; bestaat die niet meer, dan op Exporteren. */
-      function restoreFocus(el) {
-        if (disposed) return;
-        if (el && el.isConnected && !el.disabled) el.focus();
-        else exportBtn.focus();
-      }
+      /* Bij Annuleren zet App.ui.confirm de focus zelf terug op de knop die het venster opende. */
 
       /* Na het wissen van één oefening: naar de volgende prullenbak die nog iets te wissen heeft
          (nooit naar "Alles wissen"), anders naar Exporteren. */
@@ -1018,7 +1017,7 @@
         (next || exportBtn).focus();
       }
 
-      async function wipeMode(id, title, trigger) {
+      async function wipeMode(id, title) {
         const n = App.store.sessions(id).length;
         if (!n) return;
         const what = n === 1 ? `Je ene sessie van ${title} wordt verwijderd.` : `Je ${n} sessies van ${title} worden verwijderd.`;
@@ -1027,7 +1026,7 @@
           text: `${what} Dit kun je niet terugdraaien. Wil je ze bewaren, exporteer dan eerst.`,
           ok: "Wissen", cancel: "Annuleren", danger: true,
         });
-        if (!ok) { restoreFocus(trigger); return; }
+        if (!ok || disposed) return;
         App.store.clearSessions(id);
         App.ui.toast(`${title}: ${plural(n, "sessie", "sessies")} gewist.`, "ok");
         focusAfterModeWipe(id);
@@ -1042,7 +1041,7 @@
           text: `${what} Dit kun je niet terugdraaien. Je instellingen, zoals je kalibratie, blijven staan.`,
           ok: "Alles wissen", cancel: "Annuleren", danger: true,
         });
-        if (!ok) { restoreFocus(wipeAllBtn); return; }
+        if (!ok || disposed) return;
         App.store.clearSessions();
         App.ui.toast(`Alles gewist: ${plural(n, "sessie", "sessies")}.`, "ok");
         if (!disposed) exportBtn.focus();
@@ -1107,7 +1106,12 @@
           added = App.store.importJSON(JSON.stringify({ app: "maatwerk", sessions: usable }));
         } catch (e) {
           console.error(e);
-          importFailed("Dit is geen Maatwerk-bestand.");
+          // De opslag gooit ook een fout als bewaren mislukt (opslag vol); dan is het bestand wél goed
+          if (e && /^Opslaan/.test(String(e.message || ""))) {
+            setStatus("bad", "x", "Bewaren lukte niet: de opslag van deze browser is vol. Na herladen zijn de nieuwe sessies weg.");
+          } else {
+            importFailed("Dit is geen Maatwerk-bestand.");
+          }
           return;
         }
         const skipNote = broken ? ` ${plural(broken, "onvolledige sessie", "onvolledige sessies")} overgeslagen.` : "";
@@ -1211,6 +1215,7 @@
         intervals.clear();
         blobUrls.forEach((u) => URL.revokeObjectURL(u));
         blobUrls.clear();
+        App.setPlaying(false);
       }
 
       /* ================= Pagina ================= */
@@ -1219,8 +1224,8 @@
       try {
         root.append(
           App.ui.pageHead({
-            eyebrow: "Afstellen",
-            title: "Instellingen",
+            eyebrow: "Instellingen",
+            title: "Stel Maatwerk af",
             lead: "Stel je geluid en timing af, kies hoe noten heten en beheer je gegevens.",
           }),
           h("div", { class: "in-page" }, soundSection, calSection, namesSection, dataSection, aboutSection)

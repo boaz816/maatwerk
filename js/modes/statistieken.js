@@ -1126,21 +1126,22 @@
         const newest = first.all[first.all.length - 1] || null;
         const sub = String(location.hash || "").split("/")[2];
         const deep = sub ? sub.split("?")[0] : "";
+        const seen = num(App.store.getSetting(SET_SEEN, null));
+        // Een sessie die nieuwer is dan je vorige bezoek (je komt net van een oefening)
+        const fresh = !!newest && EXERCISES.includes(newest.mode) && (seen === null || newest.ts > seen);
         if (deep && TABS.includes(deep)) {
           state.tab = deep;
           persist(SET_TAB, deep);
           try { history.replaceState(null, "", "#/statistieken"); } catch (e) { /* niet erg */ }
-        } else if (newest && EXERCISES.includes(newest.mode)) {
-          const seen = num(App.store.getSetting(SET_SEEN, null));
-          if (seen === null || newest.ts > seen) {
-            state.tab = newest.mode;
-            persist(SET_TAB, newest.mode);
-            if (newest.mode === "gehoor" && newest.variant) {
-              state.variant = newest.variant;
-              state.variantPicked = true;
-              persist(SET_VARIANT, newest.variant);
-            }
-          }
+        } else if (fresh) {
+          state.tab = newest.mode;
+          persist(SET_TAB, newest.mode);
+        }
+        // Net Gehoor gespeeld en je kijkt naar Gehoor (ook via "Naar statistieken"): toon die variant
+        if (fresh && state.tab === "gehoor" && newest.mode === "gehoor" && newest.variant) {
+          state.variant = newest.variant;
+          state.variantPicked = true;
+          persist(SET_VARIANT, newest.variant);
         }
         if (newest && num(App.store.getSetting(SET_SEEN, null)) !== newest.ts) persist(SET_SEEN, newest.ts);
       })();
@@ -1580,7 +1581,7 @@
         if (items.length) controls.append(h("a", { class: "btn btn-primary", href: "#/" + id }, icon("play", 16), "Oefenen"));
         const last = items[items.length - 1];
         const meta = !allCount ? "Nog niet gespeeld"
-          : items.length ? sessionsText(items.length) + " · laatst " + relDay(last.ts)
+          : items.length ? sessionsText(items.length) + (id === "gehoor" ? " met " + variant + " gehoor" : "") + " · laatst " + relDay(last.ts)
           : "Nog geen sessies met " + variant + " gehoor";
         sec.append(h("div", { class: "st-exhead" },
           h("div", { class: "st-extitle" },
@@ -2363,8 +2364,7 @@
 
       async function removeSession(v, idx) {
         const name = modeLabel(v.mode);
-        // confirm() geeft de focus niet terug; bij Annuleren zetten we hem zelf terug op de knop
-        const back = document.activeElement;
+        // Bij Annuleren zet App.ui.confirm de focus zelf terug op deze knop
         let ok = false;
         try {
           ok = await App.ui.confirm({
@@ -2375,11 +2375,7 @@
             danger: true,
           });
         } catch (e) { ok = false; }
-        if (!alive) return;
-        if (!ok) {
-          if (back && back.isConnected && typeof back.focus === "function") back.focus({ preventScroll: true });
-          return;
-        }
+        if (!alive || !ok) return;
         focusAfter = { kind: "hist", index: idx };
         App.store.deleteSession(v.id);
         App.ui.toast("Sessie verwijderd.", "ok");
@@ -2433,6 +2429,7 @@
     return pairs[pairs.length - 1][0];
   }
   const R2 = (v) => Math.round(v * 100) / 100;
+  const R3 = (v) => Math.round(v * 1000) / 1000;
   const R4 = (v) => Math.round(v * 1e4) / 1e4;
   function seedId(ts) { return "demo-" + ts.toString(36) + Math.random().toString(36).slice(2, 8); }
 
@@ -2440,7 +2437,8 @@
     { id: "kwarten", name: "Kwarten", spb: 4, bar: [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0], hard: 0.8, w: 2 },
     { id: "achtsten", name: "Achtsten", spb: 4, bar: [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0], hard: 1, w: 4 },
     { id: "zestienden", name: "Zestienden", spb: 4, bar: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], hard: 1.3, w: 2 },
-    { id: "syncopen", name: "Syncopen", spb: 4, bar: [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0], hard: 1.35, w: 3 },
+    // Zelfde id's en namen als de patroonbibliotheek van Ritme
+    { id: "clave", name: "Clave 3-2", spb: 4, bar: [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0], hard: 1.35, w: 3 },
     { id: "triolen", name: "Triolen", spb: 3, bar: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], hard: 1.2, w: 2 },
     { id: "eigen", name: "Eigen ritme", spb: 4, bar: null, hard: 1.15, w: 1 },
   ];
@@ -2473,16 +2471,18 @@
     const extras = Math.max(0, Math.round(gauss(1.6 - 1.3 * p, 1)));
     const matched = offs.length;
     const abs = offs.map(Math.abs);
+    // Net als in Ritme: de gemiddelden zijn null als er geen enkele noot geraakt is
     const stats = {
       expected: hits.length, matched, missed: hits.length - matched, extras,
-      meanAbsMs: R1(mean(abs) || 0), meanMs: R1(mean(offs) || 0), stdMs: R1(std(offs) || 0), medianAbsMs: R1(median(abs) || 0),
-      earlyPct: matched ? R2(offs.filter((o) => o < 0).length / matched) : 0,
-      latePct: matched ? R2(offs.filter((o) => o > 0).length / matched) : 0,
+      meanAbsMs: matched ? R1(mean(abs)) : null, meanMs: matched ? R1(mean(offs)) : null,
+      stdMs: matched ? R1(std(offs)) : null, medianAbsMs: matched ? R1(median(abs)) : null,
+      earlyPct: matched ? R3(offs.filter((o) => o < 0).length / matched) : 0,
+      latePct: matched ? R3(offs.filter((o) => o > 0).length / matched) : 0,
     };
     return {
       id: seedId(ts), ts, version: 1, mode: "ritme", demo: true,
       durationMs: Math.round(((introBars + playBars) * beatsPerBar * 60000) / bpm + rint(600, 2400)),
-      score: ritmeScoreFromHits(hits, extras),
+      score: ritmeScoreFromHits(hits, extras) || 0,
       settings: { pattern: pat.id, patternName: pat.name, steps: bar, stepsPerBeat: spb, beatsPerBar, bpm, introBars, playBars, guide },
       hits, extras, stats,
     };
@@ -2491,23 +2491,55 @@
   const SEED_ERRS = [[-1, 3], [1, 3], [-2, 2], [2, 2], [-3, 1], [3, 1], [4, 1], [-4, 0.8], [5, 1.2], [-5, 1.2], [6, 0.6]];
   const PC_EASE = [0.1, -0.12, 0.04, -0.1, 0.06, 0.02, -0.16, 0.08, -0.12, 0.1, -0.08, 0];
 
+  /* Zelfde bereiken als in Gehoor (sleutel = settings.range) */
+  const SEED_RANGES = { "1": [60, 71], "2": [48, 71], "3": [48, 83] };
+
   function seedGehoor(ts, p) {
     const variant = Math.random() < 0.6 ? "absoluut" : "relatief";
-    const pcs = Math.random() < 0.3 ? WHITE_PCS.slice() : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-    const nRounds = choice([10, 20, 20]);
-    const settings = { lowMidi: 48, highMidi: 72, rounds: nRounds, pitchClasses: pcs };
-    if (variant === "relatief") { settings.reference = choice(["elke-ronde", "eenmalig"]); settings.referenceMidi = 60; }
+    const rel = variant === "relatief";
+    const notes = Math.random() < 0.3 ? "wit" : "alle";
+    const pcs = notes === "wit" ? WHITE_PCS.slice() : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    const nRounds = choice([10, 20, 20, 30]);
+    const range = weighted([["1", 3], ["2", 2], ["3", 1]]);
+    const low = SEED_RANGES[range][0], high = SEED_RANGES[range][1];
+    const settings = { lowMidi: low, highMidi: high, rounds: nRounds, pitchClasses: pcs, range, notes };
+    // Referentie zoals in Gehoor: vast (C4), of willekeurig: één keer per sessie of elke ronde een andere
+    let fixedRef = null, eachRound = false;
+    if (rel) {
+      settings.reference = choice(["elke-ronde", "eenmalig"]);
+      settings.referenceMode = Math.random() < 0.75 ? "vast" : "willekeurig";
+      if (settings.referenceMode === "vast") fixedRef = 60;
+      else if (settings.reference === "eenmalig") fixedRef = rint(low, high);
+      else eachRound = true;
+      settings.referenceMidi = settings.referenceMode === "vast" ? fixedRef : null;
+    } else {
+      settings.wipe = Math.random() < 0.8;
+    }
+    // Doelnoten: nooit precies de vaste referentie. Is dat de enige noot van die toon in het bereik,
+    // dan een octaaf hoger of lager (de kant die het dichtst bij het bereik ligt), net als in Gehoor.
     const cands = [];
-    for (let m = 48; m <= 72; m++) if (pcs.includes(pcOf(m))) cands.push(m);
+    for (let m = low; m <= high; m++) if (pcs.includes(pcOf(m)) && m !== fixedRef) cands.push(m);
+    if (fixedRef !== null && pcs.includes(pcOf(fixedRef)) && !cands.some((m) => pcOf(m) === pcOf(fixedRef))) {
+      const dist = (m) => (m < low ? low - m : m > high ? m - high : 0);
+      cands.push(dist(fixedRef + 12) <= dist(fixedRef - 12) ? fixedRef + 12 : fixedRef - 12);
+    }
     const rounds = [];
     const semitoneErrors = {};
     for (let r = 0; r < nRounds; r++) {
       const target = choice(cands);
       const pc = pcOf(target);
+      let ref = rel ? fixedRef : null;
+      if (eachRound) {
+        // Andere toon dan het doel, liefst binnen een octaaf ervan
+        const other = [];
+        for (let m = low; m <= high; m++) if (pcOf(m) !== pc) other.push(m);
+        const near = other.filter((m) => Math.abs(m - target) <= 12);
+        ref = choice(near.length ? near : other);
+      }
       let pOk = variant === "absoluut" ? 0.22 + 0.55 * p : 0.45 + 0.42 * p;
       pOk += PC_EASE[pc];
-      if (variant === "relatief") {
-        const dist = Math.abs(target - 60);
+      if (rel) {
+        const dist = Math.abs(target - ref);
         if (dist > 7) pOk -= 0.08;
         if (dist % 12 === 6) pOk -= 0.1;
       }
@@ -2524,7 +2556,7 @@
       if (!ok) { const d = wrapSemi(answerPc - pc); semitoneErrors[String(d)] = (semitoneErrors[String(d)] || 0) + 1; }
       rounds.push({
         target, answerPc, correct: ok,
-        referenceMidi: variant === "relatief" ? 60 : null,
+        referenceMidi: ref,
         timeMs: Math.round(clamp(gauss(4300 - 2100 * p, 1000), 900, 15000)),
         replays: weighted([[0, 0.5 + 0.3 * p], [1, 0.35], [2, 0.15 - 0.1 * p]]),
       });
@@ -2541,19 +2573,29 @@
   }
 
   function seedBpm(ts, p) {
-    const settings = { minBpm: 60, maxBpm: 180, rounds: 10, sound: choice(["click", "wood", "drums"]), beats: 8 };
+    // Bereiken uit BPM (Middel, Langzaam, Snel, Alles); afronding van de cijfers ook zoals daar
+    const span = weighted([[[80, 140], 3], [[50, 90], 1], [[130, 200], 1], [[50, 200], 1]]);
+    const settings = {
+      minBpm: span[0], maxBpm: span[1], rounds: choice([5, 10, 10, 20]), sound: choice(["click", "wood", "drums"]),
+      beats: choice([8, 8, 16]), tapHelp: Math.random() < 0.2,
+    };
     const rounds = [];
+    let prev = null;
     for (let r = 0; r < settings.rounds; r++) {
-      const actual = rint(settings.minBpm, settings.maxBpm);
+      let actual = rint(settings.minBpm, settings.maxBpm);
+      if (actual === prev) actual = actual < settings.maxBpm ? actual + 1 : actual - 1; // nooit twee keer hetzelfde
+      prev = actual;
       const sd = (1.5 + actual * 0.035) * (1.25 - 0.6 * p);
       const bias = -(actual - 110) * 0.03; // naar een 'prettig' middentempo toe trekken
       const guess = Math.round(actual + gauss(bias, sd));
       const diff = guess - actual;
-      rounds.push({
+      const round = {
         actual, guess, diff, pctErr: R2((Math.abs(diff) / actual) * 100),
         replays: weighted([[0, 0.55], [1, 0.32], [2, 0.13]]),
         timeMs: Math.round(clamp(gauss(6200 - 1600 * p, 1500), 2000, 20000)),
-      });
+      };
+      if (settings.tapHelp) round.tapBpm = Math.random() < 0.8 ? Math.round(actual + gauss(0, sd)) : null;
+      rounds.push(round);
     }
     const diffs = rounds.map((r) => r.diff);
     return {
@@ -2562,9 +2604,11 @@
       score: Math.round(mean(rounds.map((r) => Math.max(0, 100 - 10 * r.pctErr)))),
       settings, rounds,
       stats: {
-        meanAbsDiff: R1(mean(diffs.map(Math.abs))), meanDiff: R1(mean(diffs)), meanPctErr: R2(mean(rounds.map((r) => r.pctErr))),
-        within2: R2(diffs.filter((d) => Math.abs(d) <= 2).length / diffs.length),
-        within5: R2(diffs.filter((d) => Math.abs(d) <= 5).length / diffs.length),
+        meanAbsDiff: R2(mean(diffs.map(Math.abs))), meanDiff: R2(mean(diffs)), meanPctErr: R2(mean(rounds.map((r) => r.pctErr))),
+        within2: R3(diffs.filter((d) => Math.abs(d) <= 2).length / diffs.length),
+        within5: R3(diffs.filter((d) => Math.abs(d) <= 5).length / diffs.length),
+        replays: sum(rounds.map((r) => r.replays)),
+        meanTimeMs: Math.round(mean(rounds.map((r) => r.timeMs))),
       },
     };
   }
@@ -2575,6 +2619,17 @@
     moeilijk: ["3/4", "4/4", "5/4", "6/8", "7/8", "12/8"],
   };
   const SEED_CONF = { "2/4": ["4/4", "6/8"], "3/4": ["6/8", "4/4"], "4/4": ["2/4", "12/8", "3/4"], "5/4": ["4/4", "3/4"], "6/8": ["3/4", "12/8"], "7/8": ["6/8", "4/4"], "12/8": ["6/8", "4/4"] };
+  /* Per maatsoort zoals in Maatsoort: tempobereik, aantal tellen (startBeat) en groeperingen (grouping).
+     hard = groeperingen die alleen op Moeilijk voorkomen. */
+  const SEED_SIG_INFO = {
+    "2/4": { tempo: [80, 126], beats: 2, groups: [null] },
+    "3/4": { tempo: [84, 138], beats: 3, groups: [null] },
+    "4/4": { tempo: [80, 126], beats: 4, groups: [null] },
+    "5/4": { tempo: [88, 132], beats: 5, groups: ["3+2", "2+3"] },
+    "6/8": { tempo: [56, 88], beats: 2, groups: [null] },
+    "7/8": { tempo: [90, 130], beats: 3, groups: ["2+2+3"], hard: ["3+2+2", "2+3+2"] },
+    "12/8": { tempo: [58, 84], beats: 4, groups: [null] },
+  };
 
   function seedMaat(ts, p) {
     const difficulty = weighted([["makkelijk", 1], ["gemiddeld", 2], ["moeilijk", 1.2]]);
@@ -2590,17 +2645,41 @@
         const others = signatures.filter((s) => s !== actual);
         answer = near.length && Math.random() < 0.8 ? near[0] : choice(others.length ? others : [actual]);
       }
-      rounds.push({ actual, answer, correct: answer === actual, bpm: rint(72, 140), replays: weighted([[0, 0.55], [1, 0.33], [2, 0.12]]), timeMs: Math.round(clamp(gauss(5200 - 1500 * p, 1300), 1500, 18000)) });
+      const info = SEED_SIG_INFO[actual];
+      const hard = difficulty === "moeilijk";
+      const grouping = choice(hard && info.hard ? info.groups.concat(info.hard) : info.groups);
+      // Op Moeilijk begint een fragment meestal niet op tel 1
+      const startBeat = hard && Math.random() < 0.75 ? rint(2, info.beats) : 1;
+      rounds.push({
+        actual, answer, correct: answer === actual, bpm: rint(info.tempo[0], info.tempo[1]),
+        replays: weighted([[0, 0.55], [1, 0.33], [2, 0.12]]), timeMs: Math.round(clamp(gauss(5200 - 1500 * p, 1300), 1500, 18000)),
+        grouping, startBeat,
+      });
     }
+    // Samenvatting met dezelfde velden als in Maatsoort
     const correctN = rounds.filter((r) => r.correct).length;
-    const accuracy = R4(correctN / rounds.length);
+    const accuracy = correctN / rounds.length;
+    const perSignature = {}, confusions = {};
+    rounds.forEach((r) => {
+      const ps = perSignature[r.actual] || (perSignature[r.actual] = { total: 0, correct: 0 });
+      ps.total++;
+      if (r.correct) ps.correct++;
+      else {
+        const c = confusions[r.actual] || (confusions[r.actual] = {});
+        c[r.answer] = (c[r.answer] || 0) + 1;
+      }
+    });
     return {
       id: seedId(ts), ts, version: 1, mode: "maatsoort", demo: true,
       durationMs: rounds.reduce((t, r) => t + r.timeMs, 0) + rounds.length * rint(4000, 8000),
       score: Math.round(accuracy * 100),
       settings: { signatures, difficulty, rounds: rounds.length },
       rounds,
-      stats: { total: rounds.length, correct: correctN, accuracy },
+      stats: {
+        total: rounds.length, correct: correctN, accuracy,
+        meanTimeMs: Math.round(mean(rounds.map((r) => r.timeMs))), replays: sum(rounds.map((r) => r.replays)),
+        perSignature, confusions,
+      },
     };
   }
 
@@ -2638,23 +2717,21 @@
     console.info("Maatwerk: " + added + " voorbeeldsessies toegevoegd (demo: true). Weghalen: App.dev.clearSeed()");
     return added;
   };
-  /* In één keer: alles wissen en de echte sessies terugzetten (2 keer opslaan in plaats van één keer per
-     sessie, en één melding per stap aan de abonnees). id en ts blijven gewoon behouden. */
+  /* Haalt alleen de voorbeeldsessies (demo: true) weg, in één keer opslaan via App.store.deleteSessions.
+     De echte sessies blijven onaangeroerd staan. */
   App.dev.clearSeed = function () {
-    const all = App.store.sessions();
-    const demo = all.filter((s) => s && s.demo === true);
-    if (!demo.length) { console.info("Maatwerk: geen voorbeeldsessies gevonden."); return 0; }
-    const keep = all.filter((s) => !(s && s.demo === true));
-    // importJSON slaat records zonder mode, ts of met een dubbel id over; dan liever per stuk verwijderen
-    const safe = keep.every((s) => s && s.mode && s.ts && s.id) && new Set(keep.map((s) => s.id)).size === keep.length;
-    if (safe) {
-      App.store.clearSessions();
-      if (keep.length) App.store.importJSON(JSON.stringify({ app: "maatwerk", sessions: keep }));
-    } else {
-      demo.forEach((s) => { if (s.id != null && s.id !== "") App.store.deleteSession(s.id); });
+    const isDemo = (s) => !!s && s.demo === true;
+    const n = App.store.sessions().filter(isDemo).length;
+    if (!n) { console.info("Maatwerk: geen voorbeeldsessies gevonden."); return 0; }
+    let removed;
+    if (typeof App.store.deleteSessions === "function") removed = App.store.deleteSessions(isDemo);
+    else {
+      // Oudere basis zonder deleteSessions: per stuk verwijderen
+      App.store.sessions().filter(isDemo).forEach((s) => { if (s.id != null && s.id !== "") App.store.deleteSession(s.id); });
+      removed = n;
     }
-    console.info("Maatwerk: " + demo.length + " voorbeeldsessies verwijderd.");
-    return demo.length;
+    console.info("Maatwerk: " + removed + " voorbeeldsessies verwijderd.");
+    return removed;
   };
   /* Alleen voor losse tests van de rekenlogica */
   App.dev.statsCalc = { normalize, movingAvg, compareLast, longestStreak, wrapSemi, niceMax, ticks, fmtNum, fmtSigned, ritmeScoreFromHits };

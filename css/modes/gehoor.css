@@ -1,19 +1,16 @@
 /* Gehoor — eigen stijl van deze pagina. Alles gescoped onder .view[data-mode="gehoor"], voorvoegsel .gh-.
    Alleen tokens uit base.css; tinten en schaduwen maken we met color-mix. */
 
-/* 'hidden' moet altijd winnen, ook van .field / .btn die zelf een display hebben */
-.view[data-mode="gehoor"] [hidden] { display: none !important; }
-
 .view[data-mode="gehoor"] .gh { display: flex; flex-direction: column; gap: var(--gap); }
+
+/* Bij het resultaat is de inleiding boven de pagina niet meer nodig (zoals in de andere oefeningen) */
+.view[data-mode="gehoor"].gh-in-result .page-head .lead { display: none; }
 
 /* Tijdens het spelen staat er geen paginakop en is er minder ruimte boven: alles moet in één scherm passen */
 .view[data-mode="gehoor"].gh-playing { padding-top: 24px; }
 @media (max-width: 860px) {
   .view[data-mode="gehoor"].gh-playing { padding-top: 12px; }
 }
-
-/* Alle keuzerijen minstens 44 px hoog (klikdoel) */
-.view[data-mode="gehoor"] .seg button { min-height: 44px; }
 
 /* ================= Instellen ================= */
 .view[data-mode="gehoor"] .gh-setup {
@@ -71,11 +68,13 @@
 }
 .view[data-mode="gehoor"] .gh-warn svg { flex: none; margin-top: 1px; color: var(--warn); }
 
-.view[data-mode="gehoor"] .gh-startbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.view[data-mode="gehoor"] .gh-summary { flex: 1 1 260px; font-size: 14px; color: var(--text-2); }
+/* Startknop met de samenvatting ernaast, zoals bij de andere oefeningen */
+.view[data-mode="gehoor"] .gh-startbar { display: flex; align-items: center; gap: 12px 20px; flex-wrap: wrap; padding-top: 4px; }
+.view[data-mode="gehoor"] .gh-start { min-width: 168px; }
+.view[data-mode="gehoor"] .gh-summary { flex: 1 1 260px; min-width: 0; font-size: 14px; color: var(--text-2); }
 .view[data-mode="gehoor"] .gh-summary b { color: var(--text); font-weight: 600; }
 @media (max-width: 640px) {
-  .view[data-mode="gehoor"] .gh-start { width: 100%; }
+  .view[data-mode="gehoor"] .gh-start { width: 100%; min-width: 0; }
 }
 
 /* Zijkolom */
@@ -228,10 +227,12 @@
   font-size: 12px; font-weight: 600; color: var(--text);
   background: color-mix(in srgb, var(--mode) 22%, transparent);
 }
-.view[data-mode="gehoor"] .btn .kbd { height: 20px; min-width: 20px; font-size: 11px; margin-left: 2px; }
+/* Sneltoetslabels in knoppen: in elke oefening dezelfde maat. Op een gekleurde knop in de knoptekstkleur. */
+.view[data-mode="gehoor"] .btn .kbd { height: 20px; min-width: 20px; padding: 0 5px; margin-left: 2px; font-size: 11px; }
 .view[data-mode="gehoor"] .btn-primary .kbd {
-  background: transparent; color: var(--ink);
-  border-color: color-mix(in srgb, var(--ink) 35%, transparent);
+  background: color-mix(in srgb, var(--ink) 14%, transparent);
+  border-color: color-mix(in srgb, var(--ink) 28%, transparent);
+  color: var(--ink);
 }
 
 /* ================= Pianotoetsenbord ================= */
@@ -397,7 +398,7 @@
 .view[data-mode="gehoor"] .gh-result { display: flex; flex-direction: column; gap: var(--gap); container-type: inline-size; }
 .view[data-mode="gehoor"] .gh-result-head { display: flex; align-items: center; gap: 20px 28px; flex-wrap: wrap; }
 .view[data-mode="gehoor"] .gh-result-text { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
-.view[data-mode="gehoor"] .gh-result-title { font-size: clamp(22px, 3vw, 28px); font-weight: 700; letter-spacing: -0.03em; }
+.view[data-mode="gehoor"] .gh-result-title { font-size: clamp(24px, 3vw, 30px); font-weight: 700; letter-spacing: -0.03em; }
 .view[data-mode="gehoor"] .gh-result-title:focus,
 .view[data-mode="gehoor"] .gh-result-title:focus-visible { outline: none; }
 .view[data-mode="gehoor"] .gh-result-meta { font-size: 14px; color: var(--text-2); }

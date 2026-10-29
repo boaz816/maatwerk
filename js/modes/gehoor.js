@@ -489,6 +489,10 @@
       // dan op een laptop of telefoon, en de link 'Start' kan je sessie niet per ongeluk afbreken.
       head.hidden = v === "play";
       root.classList.toggle("gh-playing", v === "play");
+      // Bij het resultaat is de inleiding van de kop niet meer nodig (zoals in de andere oefeningen)
+      root.classList.toggle("gh-in-result", v === "result");
+      // Speelstand: op de telefoon verdwijnt de onderbalk, zodat je hem niet per ongeluk raakt
+      App.setPlaying(v === "play");
     }
 
     /* Iets voorlezen voor een schermlezer, alleen op stille momenten (niet over de tonen heen). */
@@ -651,7 +655,7 @@
           if (!alive || view !== "setup") return;
           startSession();
         },
-      }, icon("play", 18), "Start oefening");
+      }, icon("play", 18), "Start");
 
       function sync() {
         const rel = settings.variant === "relatief";
@@ -695,7 +699,7 @@
           keyMap(),
           h("ul", { class: "gh-shortcuts" },
             h("li", null, h("span", { class: "kbd" }, "R"), "Opnieuw horen"),
-            h("li", null, h("span", { class: "kbd" }, "Enter"), "Volgende ronde"),
+            h("li", null, h("span", { class: "kbd" }, "Enter"), "Volgende"),
             h("li", null, h("span", { class: "kbd" }, "Esc"), "Stoppen")
           )
         ),
@@ -714,7 +718,8 @@
             h("div", { class: "gh-fields" }, fRange, fRounds, fNotes, fRef, fRefNote, fWipe),
             warn
           ),
-          h("section", { class: "panel gh-startbar" }, summary, startBtn)
+          // Zelfde opbouw als de andere oefeningen: grote startknop, met de samenvatting ernaast
+          h("div", { class: "gh-startbar" }, startBtn, summary)
         ),
         aside
       );
@@ -772,7 +777,7 @@
         h("button", {
           type: "button", class: "btn btn-ghost gh-stop", onClick: onStop,
           "aria-label": "Stoppen", "aria-keyshortcuts": "Escape", title: "Stoppen (Esc)",
-        }, icon("stop", 14), h("span", { class: "gh-stop-text" }, "Stoppen"))
+        }, icon("stop", 14), h("span", { class: "gh-stop-text" }, "Stoppen"), h("span", { class: "kbd", "aria-hidden": "true" }, "Esc"))
       );
 
       // Kaarten: referentie (relatief) en de doelnoot
@@ -1181,7 +1186,7 @@
       let pausedAt = 0;
       try { pausedAt = App.audio.now(); } catch (e) { pausedAt = 0; }
       const ok = await App.ui.confirm({
-        title: "Oefening stoppen?",
+        title: "Sessie stoppen?",
         text: `Je hebt ${s.rounds.length} van de ${s.cfg.rounds} rondes gedaan. Een sessie die je stopt, wordt niet bewaard.`,
         ok: "Stoppen", cancel: "Doorgaan", danger: true,
       });
@@ -1213,7 +1218,9 @@
       if (cfg.variant === "relatief") {
         out.reference = cfg.reference;
         out.referenceMode = cfg.refMode;
-        out.referenceMidi = planned.fixedRef; // null = elke ronde een andere (staat per ronde in rounds)
+        // Volgens CONTRACT: alleen bij een vaste referentie een getal. Bij "willekeurig" null; de referentie
+        // staat dan per ronde in rounds (ook als hij bij "eenmalig" de hele sessie dezelfde is).
+        out.referenceMidi = cfg.refMode === "vast" ? planned.fixedRef : null;
       } else {
         out.wipe = cfg.wipe;
       }
@@ -1310,7 +1317,7 @@
       if (prev && typeof prev.score === "number") {
         const d = rec.score - Math.round(prev.score);
         delta = h("span", { class: "badge" + (d > 0 ? " ok" : "") },
-          d === 0 ? "Gelijk aan vorige keer" : App.ui.fmtSigned(d) + " sinds vorige keer");
+          d === 0 ? "Gelijk aan vorige keer" : App.ui.fmtSigned(d) + (Math.abs(d) === 1 ? " punt" : " punten") + " sinds vorige keer");
       }
       const headPanel = h("section", { class: "panel gh-result-head" },
         App.ui.scoreRing(rec.score, "score"),
@@ -1360,10 +1367,11 @@
           },
         }, icon("replay", 18), "Nog een keer"),
         h("button", { type: "button", class: "btn btn-lg", onClick: showSetup }, icon("instellingen", 18), "Andere instellingen"),
-        h("button", { type: "button", class: "btn btn-lg btn-ghost", onClick: () => App.navigate("statistieken") }, icon("statistieken", 18), "Naar statistieken")
+        h("button", { type: "button", class: "btn btn-lg btn-ghost", onClick: () => App.navigate("statistieken/" + MODE) }, icon("statistieken", 18), "Naar statistieken")
       );
 
-      body.replaceChildren(h("div", { class: "gh-result" }, headPanel, tiles, h("div", { class: "gh-result-grid" }, perPanel, errPanel), actions));
+      // Knoppen direct onder score en kerncijfers, net als bij de andere oefeningen
+      body.replaceChildren(h("div", { class: "gh-result" }, headPanel, tiles, actions, h("div", { class: "gh-result-grid" }, perPanel, errPanel)));
       window.scrollTo(0, 0);
       try { title.focus({ preventScroll: true }); } catch (e) { /* oudere browser */ }
     }
@@ -1376,6 +1384,8 @@
 
     function onKeydown(e) {
       if (!alive || view !== "play" || !session || !ui) return;
+      // Al afgehandeld, bijv. Esc die net het stopvenster sloot: anders opent dat venster meteen opnieuw
+      if (e.defaultPrevented) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return; // Cmd+R en dergelijke niet kapen
       if (isTyping(e.target)) return;
       if (document.querySelector(".modal-back")) return; // venster open: niets doen
@@ -1430,7 +1440,8 @@
       timers.forEach(clearTimeout);
       timers.clear();
       stopAllSound();
-      root.classList.remove("gh-playing");
+      root.classList.remove("gh-playing", "gh-in-result");
+      App.setPlaying(false);
       session = null;
       ui = null;
     };

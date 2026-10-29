@@ -346,14 +346,12 @@
 .view[data-mode="instellingen"] .in-about { display: flex; flex-direction: column; gap: 6px; }
 .view[data-mode="instellingen"] .in-about p + p { color: var(--text-2); font-size: 14px; }
 
-/* Op mobiel staat onderaan een vaste menubalk: houd het tikvlak (met Stoppen) en de uitslag erboven */
+/* Op mobiel staat onderaan een vaste menubalk (weg tijdens het meten): houd het tikvlak (met Stoppen)
+   en de uitslag erboven. --bottom-nav-h is de hoogte van die balk, of 0 als hij er niet is. */
 @media (max-width: 860px) {
-  .view[data-mode="instellingen"] .in-pad { scroll-margin-bottom: calc(150px + env(safe-area-inset-bottom)); }
-  .view[data-mode="instellingen"] .in-outcome { scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  .view[data-mode="instellingen"] .in-pad { scroll-margin-bottom: calc(var(--bottom-nav-h) + 86px); }
+  .view[data-mode="instellingen"] .in-outcome { scroll-margin-bottom: calc(var(--bottom-nav-h) + 32px); }
 }
-
-/* .btn zet display; zonder deze regel blijft een knop met hidden toch zichtbaar */
-.view[data-mode="instellingen"] [hidden] { display: none !important; }
 
 /* Focusring: de basis zet bij focus een kleinere hoek; houd hier de eigen vorm aan */
 .view[data-mode="instellingen"] .in-pad:focus-visible { border-radius: var(--r-l); outline-offset: 3px; }

@@ -19,14 +19,15 @@
 
 @keyframes bp-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-/* Op een gekleurde knop past het toetslabel zich aan */
+/* Sneltoetslabels in knoppen: in elke oefening dezelfde maat. Op een gekleurde knop in de knoptekstkleur. */
+.view[data-mode="bpm"] .btn .kbd { height: 20px; min-width: 20px; padding: 0 5px; margin-left: 2px; font-size: 11px; }
 .view[data-mode="bpm"] .btn-primary .kbd {
-  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  background: color-mix(in srgb, var(--ink) 14%, transparent);
   border-color: color-mix(in srgb, var(--ink) 28%, transparent);
   color: var(--ink);
 }
 /* Op een aanraakscherm zijn toetslabels ruis */
-@media (hover: none) {
+@media (hover: none) and (pointer: coarse) {
   .view[data-mode="bpm"] .bp .kbd,
   .view[data-mode="bpm"] .bp-keys { display: none; }
 }
@@ -35,7 +36,7 @@
 @media (max-width: 860px) {
   .view[data-mode="bpm"] .bp :is(button, input, a, [tabindex]) {
     scroll-margin-top: 12px;
-    scroll-margin-bottom: calc(88px + env(safe-area-inset-bottom));
+    scroll-margin-bottom: calc(var(--bottom-nav-h) + 24px);
   }
 }
 
@@ -120,7 +121,6 @@
 .view[data-mode="bpm"] label.bp-opt-title { cursor: pointer; }
 .view[data-mode="bpm"] .bp-opt-hint { grid-area: hint; font-size: 13px; color: var(--text-2); }
 .view[data-mode="bpm"] .bp-opt-control { grid-area: control; justify-self: end; min-width: 0; max-width: 100%; }
-.view[data-mode="bpm"] .bp-opt .seg button { min-height: 44px; }
 .view[data-mode="bpm"] .bp-opt .switch { min-width: 44px; justify-content: flex-end; }
 @container bp-settings (min-width: 520px) {
   .view[data-mode="bpm"] .bp-opts { margin-top: 18px; }
@@ -148,13 +148,13 @@
   border: 1px solid var(--line-2);
   box-shadow: var(--shadow);
 }
-.view[data-mode="bpm"] .bp-start { min-width: 200px; }
+.view[data-mode="bpm"] .bp-start { min-width: 168px; }
 .view[data-mode="bpm"] .bp-summary { min-width: 0; font-size: 14px; color: var(--text-2); }
 @media (max-width: 860px) {
-  .view[data-mode="bpm"] .bp-start-row { bottom: calc(72px + env(safe-area-inset-bottom)); }
+  .view[data-mode="bpm"] .bp-start-row { bottom: calc(var(--bottom-nav-h) + 8px); }
   /* Tabben door de instellingen: het veld met focus komt boven de startbalk */
   .view[data-mode="bpm"] .bp-settings :is(button, input, [tabindex]) {
-    scroll-margin-bottom: calc(190px + env(safe-area-inset-bottom));
+    scroll-margin-bottom: calc(var(--bottom-nav-h) + 126px);
   }
 }
 @media (min-width: 861px) {
@@ -532,7 +532,7 @@
 .view[data-mode="bpm"] .bp-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .view[data-mode="bpm"] .bp-badges:empty { display: none; }
 .view[data-mode="bpm"] .bp-tile-sub { margin-top: 6px; font-size: 12px; color: var(--text-2); }
-.view[data-mode="bpm"] .bp-result-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.view[data-mode="bpm"] .bp-result-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 @media (max-width: 640px) {
   .view[data-mode="bpm"] .bp-result-actions .btn { flex: 1 1 100%; }
 }
