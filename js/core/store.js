@@ -22,14 +22,23 @@
     return data;
   }
 
+  /* Schrijft alles weg. Geeft true terug als het lukte. */
   function save() {
+    let ok = true;
     try {
       localStorage.setItem(KEY, JSON.stringify(data));
     } catch (e) {
+      ok = false;
       console.warn("Opslag kon niet geschreven worden", e);
-      if (App.ui) App.ui.toast("Opslaan lukte niet: de browser blokkeert opslag.", "bad");
+      if (App.ui) App.ui.toast("Opslaan lukte niet: de opslag van de browser is vol of geblokkeerd.", "bad");
     }
     listeners.forEach((fn) => { try { fn(); } catch (e) { console.error(e); } });
+    return ok;
+  }
+
+  function validSession(s) {
+    return !!s && typeof s === "object" && typeof s.mode === "string" && s.mode.length > 0 &&
+      Number.isFinite(s.ts) && s.ts > 0 && s.ts < 8.64e15;
   }
 
   function uid() {
@@ -57,6 +66,16 @@
     load();
     data.sessions = data.sessions.filter((s) => s.id !== id);
     save();
+  }
+
+  /* Meerdere sessies tegelijk verwijderen (één keer opslaan). ids: array, of een functie (sessie) → boolean. */
+  function deleteSessions(ids) {
+    load();
+    const drop = typeof ids === "function" ? ids : ((set) => (s) => set.has(s.id))(new Set(ids));
+    const before = data.sessions.length;
+    data.sessions = data.sessions.filter((s) => !drop(s));
+    save();
+    return before - data.sessions.length;
   }
 
   /* Wis sessies; zonder mode alles. Instellingen blijven staan. */
@@ -95,11 +114,11 @@
   function importJSON(text, { replaceSettings = false } = {}) {
     load();
     const inc = JSON.parse(text);
-    if (!inc || !Array.isArray(inc.sessions)) throw new Error("Dit is geen Maatwerk-bestand.");
+    if (!inc || !Array.isArray(inc.sessions) || (inc.app && inc.app !== "maatwerk")) throw new Error("Dit is geen Maatwerk-bestand.");
     const known = new Set(data.sessions.map((s) => s.id));
     let added = 0;
     for (const s of inc.sessions) {
-      if (!s || !s.mode || !s.ts) continue;
+      if (!validSession(s)) continue;
       if (!s.id) s.id = uid();
       if (known.has(s.id)) continue;
       data.sessions.push(s);
@@ -107,7 +126,7 @@
       added++;
     }
     if (replaceSettings && inc.settings) data.settings = Object.assign({}, data.settings, inc.settings);
-    save();
+    if (!save()) throw new Error("Opslaan lukte niet: de opslag van de browser is vol.");
     return added;
   }
 
@@ -118,7 +137,7 @@
   }
 
   App.store = {
-    addSession, sessions, deleteSession, clearSessions,
+    addSession, sessions, deleteSession, deleteSessions, clearSessions,
     getSetting, setSetting, modeSettings, saveModeSettings,
     exportJSON, importJSON, subscribe,
   };

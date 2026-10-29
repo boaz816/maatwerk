@@ -159,6 +159,10 @@
     function render() {
       out.textContent = fmt(current);
       if (unit) out.append(h("small", null, unit));
+      if (el) {
+        el.setAttribute("aria-valuenow", String(current));
+        el.setAttribute("aria-valuetext", fmt(current) + (unit ? " " + unit : ""));
+      }
     }
     function set(v, fire) {
       const nv = Math.min(max, Math.max(min, Math.round(v / step) * step));
@@ -167,10 +171,18 @@
       render();
       if (fire && changed && onChange) onChange(current);
     }
+    let el = null;
     let holdTimer = null, holdInt = null;
     function hold(dir) {
+      release();
       set(current + dir * step, true);
-      holdTimer = setTimeout(() => { holdInt = setInterval(() => set(current + dir * step, true), 60); }, 380);
+      holdTimer = setTimeout(() => {
+        holdInt = setInterval(() => {
+          // Pagina gewisseld terwijl de knop nog ingedrukt was: stoppen
+          if (!el.isConnected) return release();
+          set(current + dir * step, true);
+        }, 60);
+      }, 380);
     }
     function release() { clearTimeout(holdTimer); clearInterval(holdInt); }
     const minus = h("button", { type: "button", "aria-label": "Minder", onPointerdown: (e) => { e.preventDefault(); hold(-1); }, onPointerup: release, onPointerleave: release, onPointercancel: release }, icon("minus", 18));
@@ -178,7 +190,7 @@
     // Toetsenbord: klik via Enter/spatie op de knoppen
     minus.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); set(current - step, true); } });
     plus.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); set(current + step, true); } });
-    const el = h("div", {
+    el = h("div", {
       class: "stepper", role: "spinbutton", tabindex: "0",
       "aria-label": ariaLabel || null, "aria-valuemin": isFinite(min) ? min : null, "aria-valuemax": isFinite(max) ? max : null,
       onKeydown: (e) => {
@@ -256,21 +268,45 @@
   }
 
   /* Bevestigingsvenster → Promise<boolean>. */
+  /* Bij een gevaarlijke actie staat de focus op Annuleren, zodat één Enter niets wist.
+     Het venster sluit (als "nee") bij een paginawissel, en geeft de focus daarna terug. */
   function confirm({ title, text, ok = "Doorgaan", cancel = "Annuleren", danger = false }) {
     return new Promise((resolve) => {
-      const done = (v) => { back.remove(); document.removeEventListener("keydown", onKey); resolve(v); };
-      const onKey = (e) => { if (e.key === "Escape") done(false); };
+      const opener = document.activeElement;
+      let closed = false;
+      const done = (v) => {
+        if (closed) return;
+        closed = true;
+        back.remove();
+        document.removeEventListener("keydown", onKey, true);
+        window.removeEventListener("hashchange", onRoute);
+        if (opener && opener.isConnected && typeof opener.focus === "function") opener.focus();
+        resolve(v);
+      };
+      const onRoute = () => done(false);
+      const onKey = (e) => {
+        if (e.key === "Escape") { e.preventDefault(); done(false); return; }
+        if (e.key === "Tab") {
+          // Focus binnen het venster houden
+          const items = [cancelBtn, okBtn];
+          const i = items.indexOf(document.activeElement);
+          e.preventDefault();
+          items[(i + (e.shiftKey ? items.length - 1 : 1)) % items.length].focus();
+        }
+      };
       const okBtn = h("button", { class: "btn " + (danger ? "btn-danger" : "btn-primary"), onClick: () => done(true) }, ok);
+      const cancelBtn = h("button", { class: "btn btn-ghost", onClick: () => done(false) }, cancel);
       const back = h("div", { class: "modal-back", onClick: (e) => { if (e.target === back) done(false); } },
-        h("div", { class: "modal", role: "dialog", "aria-modal": "true", "aria-label": title },
+        h("div", { class: "modal", role: "alertdialog", "aria-modal": "true", "aria-label": title },
           h("h3", null, title),
           text ? h("p", null, text) : null,
-          h("div", { class: "row" }, h("button", { class: "btn btn-ghost", onClick: () => done(false) }, cancel), okBtn)
+          h("div", { class: "row" }, cancelBtn, okBtn)
         )
       );
       document.body.append(back);
-      document.addEventListener("keydown", onKey);
-      okBtn.focus();
+      document.addEventListener("keydown", onKey, true);
+      window.addEventListener("hashchange", onRoute);
+      (danger ? cancelBtn : okBtn).focus();
     });
   }
 
@@ -282,9 +318,17 @@
     const s = r > 0 ? "+" + r : r < 0 ? MINUS + Math.abs(r) : "0";
     return withUnit ? s + " ms" : s;
   }
+  /* Getal met Nederlandse komma: fmtNum(4.25, 1) → "4,3"; zonder overbodige ",0" als trim. */
+  function fmtNum(n, digits = 0, trim = true) {
+    if (!Number.isFinite(n)) return "—";
+    let s = n.toFixed(digits);
+    if (trim && digits > 0) s = s.replace(/\.?0+$/, "");
+    return s.replace(".", ",");
+  }
   function fmtSigned(n, digits = 0) {
+    if (!Number.isFinite(n)) return "—";
     const v = +n.toFixed(digits);
-    return v > 0 ? "+" + v.toFixed(digits) : v < 0 ? MINUS + Math.abs(v).toFixed(digits) : (0).toFixed(digits);
+    return v > 0 ? "+" + fmtNum(v, digits, false) : v < 0 ? MINUS + fmtNum(Math.abs(v), digits, false) : fmtNum(0, digits, false);
   }
   /* 95000 → "1 min 35 s" */
   function fmtDuration(ms) {
@@ -297,11 +341,14 @@
   }
   const nlDate = new Intl.DateTimeFormat("nl-NL", { day: "numeric", month: "short" });
   const nlDateTime = new Intl.DateTimeFormat("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-  function fmtDate(ts, withTime = false) { return (withTime ? nlDateTime : nlDate).format(new Date(ts)); }
+  function fmtDate(ts, withTime = false) {
+    const d = new Date(ts);
+    return Number.isFinite(d.getTime()) ? (withTime ? nlDateTime : nlDate).format(d) : "—";
+  }
   function fmtPct(fraction) { return Math.round(fraction * 100) + "%"; }
 
   App.ui = {
     h, svg, icon, ICONS, segmented, chips, stepper, slider, toggle, field, pageHead, stat, scoreRing,
-    toast, confirm, fmtMs, fmtSigned, fmtDuration, fmtDate, fmtPct, MINUS,
+    toast, confirm, fmtMs, fmtNum, fmtSigned, fmtDuration, fmtDate, fmtPct, MINUS,
   };
 })();

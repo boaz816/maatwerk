@@ -15,6 +15,9 @@
   };
   App.modes = registry;
 
+  /* Speelstand: op een telefoon verdwijnt dan de onderbalk, zodat je hem niet per ongeluk raakt. */
+  App.setPlaying = function (on) { document.body.classList.toggle("is-playing", !!on); };
+
   let cleanup = null;
   let viewEl = null;
 
@@ -37,6 +40,7 @@
       try { cleanup(); } catch (e) { console.error("Opruimen mislukt", e); }
     }
     cleanup = null;
+    App.setPlaying(false);
 
     const route = currentRoute();
     const def = registry[route];

@@ -25,7 +25,7 @@
   --early: #4cc3ff;          /* te vroeg */
   --late: #ff8a4c;           /* te laat */
   --bad: #ff5c7a;            /* fout / gemist */
-  --warn: #ffc24b;
+  --warn: #f2dc4a;
 
   /* Kleur per oefening */
   --c-ritme: #3ddc84;
@@ -46,6 +46,7 @@
   --r-l: 18px;
   --gap: 16px;
   --sidebar: 248px;
+  --bottom-nav-h: 0px;      /* hoogte van de mobiele onderbalk (0 op brede schermen) */
 
   /* Beweging */
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -59,7 +60,8 @@
 [data-mode="gehoor"] { --mode: var(--c-gehoor); }
 [data-mode="bpm"] { --mode: var(--c-bpm); }
 [data-mode="maatsoort"] { --mode: var(--c-maat); }
-[data-mode="statistieken"], [data-mode="instellingen"], [data-mode="home"] { --mode: var(--accent); }
+[data-mode="statistieken"], [data-mode="instellingen"] { --mode: var(--c-stats); }
+[data-mode="home"] { --mode: var(--accent); }
 
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
@@ -80,12 +82,13 @@ p { margin: 0; }
 .mono, .num { font-family: var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 .muted { color: var(--text-2); }
 .faint { color: var(--text-3); }
+[hidden] { display: none !important; }
 .visually-hidden {
   position: absolute !important; width: 1px; height: 1px; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap;
 }
 
-:focus-visible { outline: 2px solid var(--mode); outline-offset: 2px; border-radius: 6px; }
+:focus-visible { outline: 2px solid var(--mode); outline-offset: 2px; }
 
 /* ---------- Schil: zijbalk + inhoud ---------- */
 .app {
@@ -126,11 +129,16 @@ p { margin: 0; }
   padding: 40px 40px 80px;
   animation: view-in var(--med) var(--ease);
 }
-@keyframes view-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+/* Alleen doorzichtigheid: een transform zou position: fixed binnen de pagina verschuiven */
+@keyframes view-in { from { opacity: 0; } to { opacity: 1; } }
 
 .bottom-nav { display: none; }
 
 @media (max-width: 860px) {
+  :root { --bottom-nav-h: calc(64px + env(safe-area-inset-bottom)); }
+  html { scroll-padding-bottom: calc(var(--bottom-nav-h) + 16px); }
+  body.is-playing { --bottom-nav-h: 0px; }
+  body.is-playing .bottom-nav { display: none; }
   .app { grid-template-columns: 1fr; }
   .sidebar { display: none; }
   .view { padding: 24px 16px 104px; }
@@ -153,7 +161,7 @@ p { margin: 0; }
 .page-head .back {
   align-self: flex-start; display: inline-flex; align-items: center; gap: 6px;
   color: var(--text-2); text-decoration: none; font-size: 14px; font-weight: 500;
-  min-height: 32px;
+  min-height: 44px; margin: -6px 0 -6px -2px; padding: 0 2px;
 }
 .page-head .back:hover { color: var(--text); }
 .eyebrow {
@@ -220,7 +228,7 @@ p { margin: 0; }
   max-width: 100%;
 }
 .seg button {
-  min-height: 36px; padding: 0 14px; border: 0; border-radius: 8px;
+  min-height: 44px; padding: 0 14px; border: 0; border-radius: 8px;
   background: transparent; color: var(--text-2); font-weight: 500; font-size: 14px;
   transition: background var(--fast), color var(--fast), box-shadow var(--fast);
 }
@@ -252,7 +260,7 @@ p { margin: 0; }
 
 /* Schuif */
 input[type="range"] {
-  -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent;
+  -webkit-appearance: none; appearance: none; width: 100%; height: 44px; background: transparent; cursor: pointer;
 }
 input[type="range"]::-webkit-slider-runnable-track {
   height: 6px; border-radius: 3px;
@@ -293,7 +301,7 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
 /* Keuzechips (meerdere tegelijk aan) */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
-  min-height: 36px; padding: 0 14px; border-radius: 999px;
+  min-height: 44px; padding: 0 14px; border-radius: 999px;
   border: 1px solid var(--line-2); background: transparent; color: var(--text-2);
   font-weight: 500; font-size: 14px; transition: all var(--fast);
 }
@@ -337,7 +345,7 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
 
 /* ---------- Melding (toast) en venster ---------- */
 .toasts { position: fixed; z-index: 50; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-@media (max-width: 860px) { .toasts { bottom: 96px; } }
+@media (max-width: 860px) { .toasts { bottom: calc(var(--bottom-nav-h) + 24px); } }
 .toast {
   pointer-events: auto; padding: 12px 16px; border-radius: 12px; background: var(--surface-3); border: 1px solid var(--line-2);
   box-shadow: 0 16px 40px rgba(0,0,0,.5); font-weight: 500; font-size: 14px;
@@ -385,5 +393,5 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
 @media (max-width: 720px) { .home-strip { grid-template-columns: 1fr 1fr; } }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 }

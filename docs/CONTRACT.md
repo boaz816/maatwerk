@@ -151,10 +151,10 @@ stats: {
 variant: "absoluut" | "relatief",
 settings: { lowMidi: 48, highMidi: 72, rounds: 20, pitchClasses: [0..11],  // welke noten mee mogen doen
             reference: "elke-ronde" | "eenmalig",   // alleen relatief
-            referenceMidi: 60 },                   // alleen relatief (vaste of gekozen referentie)
+            referenceMidi: 60 },                   // alleen relatief; null bij "willekeurig" (staat dan per ronde)
 rounds: [ { target: 64, answerPc: 4, correct: true, referenceMidi: 60 /* of null */, timeMs: 2300, replays: 0 } ],
 stats: { total: 20, correct: 15, accuracy: 0.75, meanTimeMs: 2600,
-         semitoneErrors: { "1": 2, "-1": 1, "7": 1 } }  // afstand (antwoord − doel, −5..+6) bij fouten
+         semitoneErrors: { "1": 2, "-1": 1, "5": 1 } }  // afstand (antwoord − doel, −5..+6) bij fouten
 ```
 **Score gehoor:** `round(accuracy × 100)`.
 
@@ -188,3 +188,37 @@ stats: { total: 10, correct: 7, accuracy: 0.7 }
 - Paginaopbouw: `pageHead` → instellingenpaneel → grote startknop → speelscherm → resultaatscherm met
   score, kerncijfers en knoppen "Nog een keer" / "Andere instellingen" / "Naar statistieken".
   Wissel tussen deze drie staten (instellen → spelen → resultaat) binnen dezelfde pagina.
+
+## Aanvullingen na de eerste bouwronde
+
+Basis (nieuw beschikbaar):
+- `App.setPlaying(true|false)` — zet de speelstand; op een telefoon verdwijnt dan de onderbalk. Roep hem
+  aan bij het begin en einde van spelen. De schil zet hem bij elke paginawissel terug op `false`.
+- `App.ui.fmtNum(n, decimalen)` — getal met Nederlandse komma ("4,2"). `fmtSigned` gebruikt nu ook een komma.
+- `App.ui.confirm` zet bij `danger` de focus op Annuleren, houdt de focus in het venster, sluit als "nee"
+  bij een paginawissel en geeft de focus terug. Zelf focus terugzetten is niet meer nodig.
+- `App.audio.previewVolume(v)` — volume alleen hoorbaar aanpassen (tijdens schuiven); `setVolume` bewaart.
+- `App.audio.ensure()` zet op iPhone/iPad zelf `navigator.audioSession.type = 'playback'`.
+- `App.store.deleteSessions(ids | fn)` — veel sessies in één keer verwijderen. `importJSON` weigert records
+  zonder geldige `mode`/`ts` en gooit een fout als opslaan mislukt.
+- `base.css`: `[hidden]` verbergt altijd; `.seg button`, `.chip`, schuif en terug-link zijn 44 px hoog;
+  `--bottom-nav-h` is de hoogte van de mobiele onderbalk (0 op breed en tijdens spelen).
+- Statistieken en Instellingen hebben als `--mode` nu de neutrale `--c-stats` (wit), niet meer paars.
+
+Diepe link naar statistieken: de knop "Naar statistieken" roept `App.navigate('statistieken/<id>')` aan
+(bijv. `statistieken/ritme`). De statistiekenpagina opent dan die oefening.
+
+Instellingen-sleutels van de statistiekenpagina (niet hergebruiken): `stats.tab`, `stats.gehoorVariant`,
+`stats.range`, `stats.seenTs`.
+
+Verduidelijkingen per record:
+- **ritme:** `stats.meanAbsMs`, `meanMs`, `stdMs`, `medianAbsMs` zijn `null` als er geen enkele noot geraakt is.
+  `hits[].bar` telt vanaf de eerste meeklikmaat (0, zonder intro); `hits[].expectedMs` is in ms vanaf het
+  begin van het meeklikdeel.
+- **gehoor:** extra velden in `settings`: `range` ("1"|"2"|"3"), `notes` ("alle"|"wit"|"eigen"),
+  `referenceMode` ("vast"|"willekeurig", alleen relatief), `wipe` (boolean, alleen absoluut).
+  `rounds[].timeMs` = ms vanaf de aanslag van de doelnoot (eerste keer) tot je antwoord.
+  Een doelnoot kan één octaaf buiten `lowMidi..highMidi` liggen als de enige noot van die toonklasse in het
+  bereik de vaste referentie zelf is.
+- **maatsoort:** extra in `stats`: `perSignature` (`{"6/8": {total, correct}}`), `confusions`
+  (`{"6/8": {"3/4": 2}}`), `meanTimeMs`, `replays`; per ronde ook `grouping` en `startBeat`.

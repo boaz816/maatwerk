@@ -13,6 +13,8 @@
   /* Maakt de AudioContext (pas na een klik of toets van de gebruiker) en hervat hem. */
   function ensure() {
     if (!ctx) {
+      // iPhone/iPad: anders is alles stil als de stilteknop aan staat (Safari 16.4+)
+      try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) { /* niet ondersteund */ }
       const AC = window.AudioContext || window.webkitAudioContext;
       ctx = new AC({ latencyHint: "interactive" });
       master = ctx.createGain();
@@ -33,8 +35,13 @@
   function now() { return ensure().currentTime; }
 
   function volumeToGain(v) { return Math.pow(Math.max(0, Math.min(1, v)), 2); }
+  /* Volume zetten en bewaren. */
   function setVolume(v) {
     if (App.store) App.store.setSetting("volume", v);
+    previewVolume(v);
+  }
+  /* Volume alleen hoorbaar aanpassen, zonder op te slaan (tijdens het schuiven). */
+  function previewVolume(v) {
     if (master) master.gain.setTargetAtTime(volumeToGain(v), ctx.currentTime, 0.02);
   }
 
@@ -334,7 +341,7 @@
   }
 
   App.audio = {
-    ensure, ready, now, setVolume, outputLatency,
+    ensure, ready, now, setVolume, previewVolume, outputLatency,
     click, drum, note, sequence, stopAll,
     eventToAudioTime, rawOffsetMs, offsetMs,
     get context() { return ctx; },
