@@ -227,3 +227,26 @@ Verduidelijkingen per record:
 - **gehoor:** `settings.referenceMidi` is bij "willekeurig" altijd `null`, ook bij referentie "eenmalig".
 - Testhulp: records van `App.dev.seedStats(n)` hebben `demo: true`; `App.dev.clearSeed()` verwijdert alleen die.
 - `App.store.addSession` geeft `null` terug als opslaan mislukte (de sessie is dan niet bewaard).
+
+## Online en als app (30 okt 2026)
+
+Maatwerk staat online op **https://boaz816.github.io/maatwerk/**. Elke push naar `main` zet de nieuwe
+versie daar binnen een paar minuten neer (`.github/workflows/online.yml`). Lokaal verandert er niets:
+`index.html` los openen en `python3 -m http.server 5183` werken zoals altijd.
+
+- `tools/bouw-site.sh <map>` kopieert de app naar een nieuwe map en vult de versie (korte commit) in:
+  `<meta name="maatwerk-version">` in index.html, `VERSIE` en `BESTANDEN` in sw.js, en `version.json`.
+  Nieuwe bestanden in `css/`, `js/` en `icons/` gaan vanzelf mee. Een nieuw bestand of een nieuwe map in de
+  hoofdmap moet je in de `cp`-regel van dat script zetten.
+- `sw.js` (service worker): de app start altijd uit één complete, bewaarde versie (snel, en ook zonder
+  internet). Een nieuwe versie haalt hij in één keer binnen (alles of niets) en die neemt het pas over als
+  alles binnen is. `version.json` gaat altijd langs de server en wordt nooit bewaard.
+- `js/core/pwa.js`: registreert sw.js en kijkt bij openen, bij terugkomen in de app en elk halfuur in
+  `version.json`. Is die anders dan de eigen versie, dan verschijnt bovenaan een balk "Bijwerken": die wacht
+  tot de nieuwe versie binnen is en herlaadt dan. De balk komt niet tijdens de speelstand en is dan ook
+  verborgen. Doet niets bij `file://` of bij versie `dev` (lokaal). Dit is de enige `fetch` van een eigen
+  bestand, en alleen online. `App.version` geeft de versie.
+- `manifest.webmanifest` en `icons/` maken het een app voor het beginscherm. De iconen komen van het logo
+  (vier balkjes); ze zijn gemaakt met een los Python-script, geen bronbestand nodig.
+- Gegevens blijven per apparaat en per adres in `localStorage`. Op iPhone heeft de app op het beginscherm
+  een eigen opslag, los van Safari.

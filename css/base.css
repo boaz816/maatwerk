@@ -355,6 +355,18 @@ input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius
 .toast.bad { border-color: color-mix(in srgb, var(--bad) 50%, transparent); }
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
+/* Nieuwe versie online (js/core/pwa.js): een balk boven de pagina, geen venster */
+.update-bar {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px;
+  width: min(1040px, calc(100% - 80px)); margin: 24px auto 0; padding: 10px 10px 10px 18px;
+  background: var(--surface-2); border: 1px solid color-mix(in srgb, var(--mode) 45%, var(--line-2)); border-radius: var(--r);
+  font-weight: 500; font-size: 15px;
+  animation: toast-in var(--med) var(--ease);
+}
+.update-bar-acties { display: flex; align-items: center; gap: 4px; }
+body.is-playing .update-bar { display: none; }
+@media (max-width: 860px) { .update-bar { width: calc(100% - 32px); margin-top: 16px; } }
+
 .modal-back { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.6); display: grid; place-items: center; padding: 16px; animation: fade var(--fast); }
 .modal { width: min(440px, 100%); background: var(--surface); border: 1px solid var(--line-2); border-radius: var(--r-l); padding: 24px; box-shadow: 0 24px 60px rgba(0,0,0,.6); }
 .modal h3 { font-size: 18px; margin-bottom: 8px; }

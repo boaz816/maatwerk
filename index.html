@@ -4,7 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#09090c">
+  <!-- Versie: tools/bouw-site.sh vult hier bij het online zetten de commit in -->
+  <meta name="maatwerk-version" content="dev">
   <title>Maatwerk</title>
+  <meta name="description" content="Korte oefeningen voor ritme, toonhoogte, tempo en maatsoort.">
+  <!-- Als app op je beginscherm -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Maatwerk">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
@@ -26,6 +37,8 @@
   <script src="js/core/audio.js"></script>
   <!-- Schil: menu en routes; start pas als de hele pagina geladen is -->
   <script src="js/core/app.js"></script>
+  <!-- Als app: zonder internet spelen en melden als er een nieuwe versie is -->
+  <script src="js/core/pwa.js"></script>
   <!-- Oefeningen en pagina's: elk meldt zich aan met App.registerMode -->
   <script src="js/modes/ritme.js"></script>
   <script src="js/modes/gehoor.js"></script>
